@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/add_city_background">
+
+    <SearchView
+        android:id="@+id/searchCity"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="20dp"
+        android:background="@drawable/search_view_border"
+        android:searchIcon="@drawable/ic_action_search"
+        android:closeIcon="@drawable/ic_action_close"
+        android:queryHint="Enter city name"
+        android:searchHintIcon="@drawable/ic_action_search">
+    </SearchView>
+
+</LinearLayout>
