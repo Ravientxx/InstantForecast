@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">DemoOpenWeatherMap</string>
+    <string name="app_name">InstantForecast</string>
     <string name="app_data_file">AppData</string>
 
 

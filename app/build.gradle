@@ -5,8 +5,8 @@ android {
     buildToolsVersion "23.0.3"
 
     defaultConfig {
-        applicationId "com.example.dell.demoopenweathermap"
-        minSdkVersion 15
+        applicationId "com.example.dell.instantforecast"
+        minSdkVersion 16
         targetSdkVersion 23
         versionCode 1
         versionName "1.0"
@@ -28,4 +28,6 @@ dependencies {
     compile 'com.android.support:support-v4:23.4.0'
     compile 'com.android.support:design:23.4.0'
     compile 'com.google.code.gson:gson:2.7'
+    compile "com.mikepenz:iconics-core:2.7.2@aar"
+    compile 'com.mikepenz:weather-icons-typeface:2.0.10.2@aar'
 }

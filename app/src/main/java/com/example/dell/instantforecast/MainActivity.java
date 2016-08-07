@@ -44,13 +44,15 @@ public class MainActivity extends AppCompatActivity {
     static AppDataModel appDataModel;
     static NavigationMenuListAdapter navigationMenuListAdapter;
     boolean firstStart;
+    boolean dataFileNotFound;
     Toolbar toolbar;
     ActionBar actionBar;
     static DrawerLayout drawer;
     NavigationView navigationView;
     ListView navigationMenuList;
     static MainActivity mainActivity;
-    TextView detailsField, currentTemperatureField, humidity_field, pressure_field, weatherIcon;
+    TextView detailsField, currentTemperatureField, max_temperature, min_temperature, weatherIcon;
+    ImageView max_img, min_img;
     TextView customTitle, customSubtitle;
     Typeface weatherFont;
 
@@ -68,7 +70,6 @@ public class MainActivity extends AppCompatActivity {
                     );
                     if (doAddCity) {
                         if (doAddCurrentLocation) {
-                            System.out.println("abc");
                             MainActivity.appDataModel.current_city = current_cityNowWeatherInfo;
                         } else {
                             boolean cityExisted = false;
@@ -93,6 +94,10 @@ public class MainActivity extends AppCompatActivity {
                     //humidity_field.setText("Humidity: "+weather_humidity);
                     //pressure_field.setText("Pressure: "+weather_pressure);
                     weatherIcon.setText(Html.fromHtml(weather_iconText));
+                    max_img.setImageResource(R.drawable.ic_vertical_align_top_white_24dp);
+                    min_img.setImageResource(R.drawable.ic_vertical_align_bottom_white_24dp);
+                    max_temperature.setText("30°");
+                    min_temperature.setText("24°");
                 }
             });
             getCurrentWeatherTask.execute(Lat, Lon);
@@ -200,7 +205,7 @@ public class MainActivity extends AppCompatActivity {
         initNavigationMenu();
 
         firstStart = true;
-
+        dataFileNotFound = false;
     }
 
     public boolean isOnline() {
@@ -228,7 +233,7 @@ public class MainActivity extends AppCompatActivity {
         loadAppData();
         updateNavigationMenuList();
         super.onStart();
-        if (firstStart == true) {
+        if (firstStart == true && dataFileNotFound == false) {
             loadCurrentWeather(
                     appDataModel.current_city.lat,
                     appDataModel.current_city.lon,
@@ -300,6 +305,8 @@ public class MainActivity extends AppCompatActivity {
         } catch (FileNotFoundException e) {
             appDataModel = new AppDataModel();
             appDataModel.city_list = new ArrayList<CityNowWeatherInfo>();
+            appDataModel.current_city = new CityNowWeatherInfo("Ho Chi Minh","VN","","","10.75","106.666672");
+            dataFileNotFound = true;
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -313,11 +320,14 @@ public class MainActivity extends AppCompatActivity {
         weatherFont = Typeface.createFromAsset(getAssets(), "fonts/weathericons-regular-webfont.ttf");
         detailsField = (TextView) findViewById(R.id.details_field);
         currentTemperatureField = (TextView) findViewById(R.id.current_temperature_field);
-        humidity_field = (TextView) findViewById(R.id.humidity_field);
-        pressure_field = (TextView) findViewById(R.id.pressure_field);
         weatherIcon = (TextView) findViewById(R.id.weather_icon);
         weatherIcon.setTypeface(weatherFont);
         customSubtitle = (TextView) findViewById(R.id.custom_subtitle);
         customTitle = (TextView) findViewById(R.id.custom_title);
+
+        max_img = (ImageView) findViewById(R.id.max_icon);
+        max_temperature = (TextView) findViewById(R.id.max_temperature);
+        min_img = (ImageView) findViewById(R.id.min_icon);
+        min_temperature = (TextView) findViewById(R.id.min_temperature);
     }
 }

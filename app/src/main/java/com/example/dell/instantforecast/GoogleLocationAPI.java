@@ -1,7 +1,9 @@
 package com.example.dell.instantforecast;
 
 import android.location.Location;
+import android.support.annotation.NonNull;
 
+import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
 
@@ -15,6 +17,12 @@ public class GoogleLocationAPI {
     static public void initGoogleClient() {
         googleClient =  new GoogleApiClient.Builder(MainActivity.mainActivity)
                 .addApi(LocationServices.API)
+                .addOnConnectionFailedListener(new GoogleApiClient.OnConnectionFailedListener() {
+                    @Override
+                    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+                        System.out.println("GoogleLocationAPI.java: fail to connect");
+                    }
+                })
                 .build();
     }
 

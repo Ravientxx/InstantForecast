@@ -99,7 +99,8 @@ public class AddCityActivity extends AppCompatActivity implements AdapterView.On
 
         listView.setOnItemClickListener(this);
 
-        int id = searchView.getContext().getResources().getIdentifier("android:id/search_src_text", null, null);
+        int id = searchView.getContext().
+                getResources().getIdentifier("android:id/search_src_text", null, null);
         EditText searchEditText = (EditText) searchView.findViewById(id);
         searchEditText.setTextColor(Color.WHITE);
         searchEditText.setHintTextColor(Color.WHITE);
@@ -137,8 +138,9 @@ public class AddCityActivity extends AppCompatActivity implements AdapterView.On
         if(doneLoadCityList) {
             if (newText.length() > 0) {
                 searchResult.clear();
+                System.out.println(newText);
                 for (int i = 0; i < cityName.size(); i++) {
-                    if (cityName.get(i).toLowerCase().indexOf(newText.toLowerCase()) == 0) {
+                    if (cityName.get(i).toLowerCase().contains(newText.toLowerCase())) {
                         searchResult.add(cityName.get(i));
                     }
                 }
