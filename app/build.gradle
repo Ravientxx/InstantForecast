@@ -6,10 +6,12 @@ android {
 
     defaultConfig {
         applicationId "com.example.dell.instantforecast"
-        minSdkVersion 16
+        minSdkVersion 17
         targetSdkVersion 23
         versionCode 1
         versionName "1.0"
+        renderscriptTargetApi 18
+        renderscriptSupportModeEnabled true
     }
     buildTypes {
         release {

@@ -2,12 +2,22 @@ package com.example.dell.instantforecast;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.graphics.Typeface;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.renderscript.Allocation;
+import android.renderscript.Element;
+import android.renderscript.RenderScript;
+import android.renderscript.ScriptIntrinsicBlur;
 import android.support.design.widget.NavigationView;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
@@ -24,6 +34,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -52,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
     ListView navigationMenuList;
     static MainActivity mainActivity;
     TextView detailsField, currentTemperatureField, max_temperature, min_temperature, weatherIcon;
-    ImageView max_img, min_img;
+    ImageView max_img, min_img, background_image_view;
     TextView customTitle, customSubtitle;
     Typeface weatherFont;
 
@@ -197,12 +208,17 @@ public class MainActivity extends AppCompatActivity {
         inflater.inflate(R.layout.weather_info_scroll_view, parent);
 
         loadLayoutItem();
+
+
         //Init Joda-Time library
         JodaTimeAndroid.init(this);
         //Init google Location API
         GoogleLocationAPI.initGoogleClient();
 
         initNavigationMenu();
+
+        background_image_view = (ImageView) findViewById(R.id.background_image_view);
+        background_image_view.setImageResource(R.drawable.back);
 
         firstStart = true;
         dataFileNotFound = false;
@@ -260,8 +276,11 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(new Intent(MainActivity.this, AppSettingActivity.class));
                 return true;
             case R.id.action_abouts:
-                clearAppData();
-                updateNavigationMenuList();
+                //clearAppData();
+                //updateNavigationMenuList();
+                Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.back);
+                Bitmap blurredBitmap = blur(bitmap);
+                background_image_view.setImageBitmap(blurredBitmap);
                 return true;
         }
         return false;
@@ -330,4 +349,44 @@ public class MainActivity extends AppCompatActivity {
         min_img = (ImageView) findViewById(R.id.min_icon);
         min_temperature = (TextView) findViewById(R.id.min_temperature);
     }
+
+    public Bitmap drawableToBitmap(Drawable drawable) {
+        Bitmap bitmap = null;
+
+        if (drawable instanceof BitmapDrawable) {
+            BitmapDrawable bitmapDrawable = (BitmapDrawable) drawable;
+            if (bitmapDrawable.getBitmap() != null) {
+                return bitmapDrawable.getBitmap();
+            }
+        }
+
+        if (drawable.getIntrinsicWidth() <= 0 || drawable.getIntrinsicHeight() <= 0) {
+            bitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888); // Single color bitmap will be created of 1x1 pixel
+        } else {
+            bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+        }
+
+        Canvas canvas = new Canvas(bitmap);
+        drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+        drawable.draw(canvas);
+        return bitmap;
+    }
+
+    public Bitmap blur(Bitmap image) {
+        if (null == image) return null;
+
+        Bitmap outputBitmap = Bitmap.createBitmap(image);
+        final RenderScript renderScript = RenderScript.create(this);
+        Allocation tmpIn = Allocation.createFromBitmap(renderScript, image);
+        Allocation tmpOut = Allocation.createFromBitmap(renderScript, outputBitmap);
+
+        //Intrinsic Gausian blur filter
+        ScriptIntrinsicBlur theIntrinsic = ScriptIntrinsicBlur.create(renderScript, Element.U8_4(renderScript));
+        theIntrinsic.setRadius(25f);
+        theIntrinsic.setInput(tmpIn);
+        theIntrinsic.forEach(tmpOut);
+        tmpOut.copyTo(outputBitmap);
+        return outputBitmap;
+    }
+
 }
