@@ -7,7 +7,9 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.location.Criteria;
 import android.location.Location;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.renderscript.Allocation;
 import android.renderscript.Element;
@@ -28,6 +30,7 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.gson.Gson;
 
@@ -53,6 +56,7 @@ public class MainActivity extends AppCompatActivity {
     NavigationView navigationView;
     ListView navigationMenuList;
     static MainActivity mainActivity;
+    GPSTracker gpsTracker;
 
     static ImageView background_image_view;
     static TextView city_name_textview, city_time_textview;
@@ -87,20 +91,20 @@ public class MainActivity extends AppCompatActivity {
                 drawer.closeDrawer(GravityCompat.START);
             }
         });
+
         myLocation.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Location myLocation = GoogleLocationAPI.getLocation();
-                if (myLocation != null) {
-                    WeatherInfoFragment.loadWeatherInfo(
-                            String.valueOf(myLocation.getLatitude()),
-                            String.valueOf(myLocation.getLongitude()),
-                            true,
-                            true
-                    );
-                }
+                Location myLocation = gpsTracker.getLocation();
+                WeatherInfoFragment.loadWeatherInfo(
+                        String.valueOf(myLocation.getLatitude()),
+                        String.valueOf(myLocation.getLongitude()),
+                        true,
+                        true
+                );
                 drawer.closeDrawer(GravityCompat.START);
             }
+
         });
     }
 
@@ -142,7 +146,7 @@ public class MainActivity extends AppCompatActivity {
 
         background_image_view = (ImageView) findViewById(R.id.background_image_view);
         background_image_view.setImageResource(R.drawable.back);
-
+        gpsTracker = new GPSTracker(mainActivity);
         firstStart = true;
         dataFileNotFound = false;
     }
@@ -165,9 +169,10 @@ public class MainActivity extends AppCompatActivity {
         GoogleLocationAPI.connect();
         loadAppData();
         if (firstStart == true && dataFileNotFound == false) {
+            Location location = gpsTracker.getLocation();
             WeatherInfoFragment.loadWeatherInfo(
-                    appDataModel.current_city.lat,
-                    appDataModel.current_city.lon,
+                    String.valueOf(location.getLatitude()),
+                    String.valueOf(location.getLongitude()),
                     false,
                     false
             );
