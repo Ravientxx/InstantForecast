@@ -15,6 +15,7 @@
     </style>
 
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar">
+        <item name="android:elevation">0dp</item>
     </style>
     <style name="AppTheme.NavigationView">
         <item name="android:textColorSecondary">#FFFFFF</item>

@@ -124,7 +124,7 @@ public class AddCityActivity extends AppCompatActivity implements AdapterView.On
 
         String result = searchResult.get(position);
         int i = cityName.indexOf(result);
-        MainActivity.mainActivity.loadCurrentWeather(cityLat.get(i), cityLon.get(i), true ,false);
+        WeatherInfoFragment.loadWeatherInfo(cityLat.get(i), cityLon.get(i), true ,false);
         finish();
     }
 

@@ -61,7 +61,7 @@ public class NavigationMenuListAdapter extends BaseAdapter {
             @Override
             public void onClick(View v) {
                 MainActivity.drawer.closeDrawer(GravityCompat.START);
-                MainActivity.mainActivity.loadCurrentWeather(current_city.lat,current_city.lon,false,false);
+                WeatherInfoFragment.loadWeatherInfo(current_city.lat,current_city.lon,false,false);
             }
         });
         return convertView;
