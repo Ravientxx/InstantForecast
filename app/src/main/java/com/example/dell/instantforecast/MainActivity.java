@@ -3,18 +3,11 @@ package com.example.dell.instantforecast;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.location.Criteria;
 import android.location.Location;
-import android.location.LocationManager;
 import android.os.Bundle;
-import android.renderscript.Allocation;
-import android.renderscript.Element;
-import android.renderscript.RenderScript;
-import android.renderscript.ScriptIntrinsicBlur;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -30,7 +23,6 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.gson.Gson;
 
@@ -87,7 +79,7 @@ public class MainActivity extends AppCompatActivity {
         editLocation.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(MainActivity.this, AddCityActivity.class));
+                startActivity(new Intent(MainActivity.this, AddLocationActivity.class));
                 drawer.closeDrawer(GravityCompat.START);
             }
         });
@@ -136,11 +128,8 @@ public class MainActivity extends AppCompatActivity {
             actionBar.setSubtitle("");
             actionBar.setElevation(0);
         }
-
         //Init Joda-Time library
         JodaTimeAndroid.init(this);
-        //Init google Location API
-        GoogleLocationAPI.initGoogleClient();
 
         initNavigationMenu();
 
@@ -159,14 +148,12 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onStop() {
-        GoogleLocationAPI.disconnect();
         super.onStop();
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        GoogleLocationAPI.connect();
         loadAppData();
         if (firstStart == true && dataFileNotFound == false) {
             Location location = gpsTracker.getLocation();
