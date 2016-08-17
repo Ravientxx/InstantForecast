@@ -38,18 +38,17 @@ import java.util.ArrayList;
 public class MainActivity extends AppCompatActivity {
 
     final String FILENAME = "AppCityData";
-    static AppDataModel appDataModel;
+    static AppDataModel appDataModel = new AppDataModel();
     static NavigationMenuListAdapter navigationMenuListAdapter;
-    boolean firstStart;
-    boolean dataFileNotFound;
+    boolean firstStart = true;
+    boolean dataFileNotFound = false;
+    static MainActivity mainActivity;
+    GPSTracker gpsTracker;
     static Toolbar toolbar;
     ActionBar actionBar;
     static DrawerLayout drawer;
     NavigationView navigationView;
     ListView navigationMenuList;
-    static MainActivity mainActivity;
-    GPSTracker gpsTracker;
-
     static ImageView background_image_view;
     static TextView city_name_textview, city_time_textview;
 
@@ -79,7 +78,7 @@ public class MainActivity extends AppCompatActivity {
         editLocation.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(MainActivity.this, AddLocationActivity.class));
+                startActivity(new Intent(MainActivity.this, EditLocationActivity.class));
                 drawer.closeDrawer(GravityCompat.START);
             }
         });
@@ -89,10 +88,9 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Location myLocation = gpsTracker.getLocation();
                 WeatherInfoFragment.loadWeatherInfo(
+                        "get_current_location",
                         String.valueOf(myLocation.getLatitude()),
-                        String.valueOf(myLocation.getLongitude()),
-                        true,
-                        true
+                        String.valueOf(myLocation.getLongitude())
                 );
                 drawer.closeDrawer(GravityCompat.START);
             }
@@ -103,19 +101,16 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         //Hide title bar
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
-
         mainActivity = this;
-
         //Set layout for activity
         setContentView(R.layout.activity_main);
 
-        city_time_textview = (TextView) MainActivity.mainActivity.findViewById(R.id.city_time_textview);
-        city_name_textview = (TextView) MainActivity.mainActivity.findViewById(R.id.city_name_textview);
+        city_time_textview = (TextView) findViewById(R.id.city_time_textview);
+        city_name_textview = (TextView) findViewById(R.id.city_name_textview);
 
         toolbar = (Toolbar) findViewById(R.id.main_toolbar);
         setSupportActionBar(toolbar);
@@ -134,10 +129,7 @@ public class MainActivity extends AppCompatActivity {
         initNavigationMenu();
 
         background_image_view = (ImageView) findViewById(R.id.background_image_view);
-        background_image_view.setImageResource(R.drawable.back);
         gpsTracker = new GPSTracker(mainActivity);
-        firstStart = true;
-        dataFileNotFound = false;
     }
 
     @Override
@@ -147,21 +139,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onStop() {
-        super.onStop();
-    }
-
-    @Override
     protected void onStart() {
         super.onStart();
         loadAppData();
         if (firstStart == true && dataFileNotFound == false) {
             Location location = gpsTracker.getLocation();
             WeatherInfoFragment.loadWeatherInfo(
+                    "get_current_location",
                     String.valueOf(location.getLatitude()),
-                    String.valueOf(location.getLongitude()),
-                    false,
-                    false
+                    String.valueOf(location.getLongitude())
             );
             firstStart = false;
         }
@@ -169,7 +155,6 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; add items to the action bar
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
     }
@@ -193,7 +178,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-
         if (drawer != null && drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
@@ -201,7 +185,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void saveAppData() {
+    public void saveAppData() {
         String string = new Gson().toJson(appDataModel, AppDataModel.class);
         try {
             FileOutputStream out = openFileOutput(FILENAME, Context.MODE_PRIVATE);
@@ -213,7 +197,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void loadAppData() {
+    public void loadAppData() {
         String string1 = "";
         try {
             FileInputStream inputStream = openFileInput(FILENAME);
@@ -226,46 +210,13 @@ public class MainActivity extends AppCompatActivity {
             appDataModel = new Gson().fromJson(string1, AppDataModel.class);
             System.out.println(string1);
         } catch (FileNotFoundException e) {
-            appDataModel = new AppDataModel();
             appDataModel.city_list = new ArrayList<CityNowWeatherInfo>();
-            appDataModel.current_city = new CityNowWeatherInfo("Ho Chi Minh","VN","","","10.75","106.666672");
             dataFileNotFound = true;
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            updateNavigationMenu();
+            navigationMenuListAdapter = new NavigationMenuListAdapter(MainActivity.this, appDataModel.city_list);
+            navigationMenuList.setAdapter(navigationMenuListAdapter);
         }
     }
-    public void updateNavigationMenu(){
-        navigationMenuListAdapter = new NavigationMenuListAdapter(MainActivity.this, appDataModel.city_list);
-        navigationMenuList.setAdapter(navigationMenuListAdapter);
-    }
-    private void clearAppData() {
-        appDataModel.city_list.clear();
-    }
-
-    public Bitmap drawableToBitmap(Drawable drawable) {
-        Bitmap bitmap = null;
-
-        if (drawable instanceof BitmapDrawable) {
-            BitmapDrawable bitmapDrawable = (BitmapDrawable) drawable;
-            if (bitmapDrawable.getBitmap() != null) {
-                return bitmapDrawable.getBitmap();
-            }
-        }
-
-        if (drawable.getIntrinsicWidth() <= 0 || drawable.getIntrinsicHeight() <= 0) {
-            bitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888); // Single color bitmap will be created of 1x1 pixel
-        } else {
-            bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
-        }
-
-        Canvas canvas = new Canvas(bitmap);
-        drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
-        drawable.draw(canvas);
-        return bitmap;
-    }
-
-
-
 }

@@ -8,19 +8,22 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
 
 /**
- * Created by Dell on 7/25/2016.
+ * Created by Dell on 8/17/2016.
  */
-public class NavigationMenuListAdapter extends BaseAdapter {
+public class EditLocationListAdapter extends BaseAdapter {
     public Context contextListView;
     ArrayList<CityNowWeatherInfo> listModels;
 
-    NavigationMenuListAdapter(Context context,ArrayList<CityNowWeatherInfo> city_list){
+    EditLocationListAdapter(Context context,ArrayList<CityNowWeatherInfo> city_list){
         contextListView = context;
+        //listModels = new ArrayList<CityNowWeatherInfo>();
+        //listModels.addAll(city_list);
         listModels = city_list;
     }
     @Override
@@ -39,28 +42,23 @@ public class NavigationMenuListAdapter extends BaseAdapter {
     }
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
+    public View getView(final int position, View convertView, ViewGroup parent) {
         final CityNowWeatherInfo current_city = listModels.get(position);
 
         if (convertView == null) {
             LayoutInflater inflater = (LayoutInflater) contextListView.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            convertView = inflater.inflate(R.layout.nav_menu_list_item, parent, false);
+            convertView = inflater.inflate(R.layout.edit_location_list_item, parent, false);
         }
-        TextView weatherIcon = (TextView) convertView.findViewById(R.id.weather_icon);
+        ImageView reorderIcon = (ImageView) convertView.findViewById(R.id.reorder_icon);
+        ImageView deleteIcon = (ImageView) convertView.findViewById(R.id.delete_icon);
         TextView cityName = (TextView) convertView.findViewById(R.id.city_name);
-        TextView temperature = (TextView) convertView.findViewById(R.id.temperature_field);
-
-        Typeface weatherFont = Typeface.createFromAsset(convertView.getContext().getAssets(), "fonts/weathericons-regular-webfont.ttf");
-        weatherIcon .setText(Html.fromHtml(current_city.weatherIconText));
-        weatherIcon.setTypeface(weatherFont);
         cityName.setText(current_city.name);
-        temperature.setText(current_city.temperature);
 
-        convertView.setOnClickListener(new View.OnClickListener() {
+        deleteIcon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                MainActivity.drawer.closeDrawer(GravityCompat.START);
-                WeatherInfoFragment.loadWeatherInfo(current_city.id,current_city.lat,current_city.lon);
+                listModels.remove(position);
+                notifyDataSetChanged();
             }
         });
         return convertView;

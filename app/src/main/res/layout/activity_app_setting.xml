@@ -12,7 +12,7 @@
         android:layout_height="wrap_content"
         android:text="Units"
         android:textColor="#fff"
-        android:textSize="25sp" />
+        android:textSize="@dimen/main_text_size" />
 
     <Button
         android:id="@+id/celcius_button"
@@ -45,7 +45,7 @@
         android:layout_height="wrap_content"
         android:text="Daily Notification"
         android:textColor="#fff"
-        android:textSize="25sp"
+        android:textSize="@dimen/main_text_size"
         android:layout_marginTop="20dp"
         android:layout_below="@+id/celcius_button"
         android:clickable="true"
@@ -64,7 +64,7 @@
         android:layout_height="wrap_content"
         android:text="Ongoing Notification"
         android:textColor="#fff"
-        android:textSize="25sp"
+        android:textSize="@dimen/main_text_size"
         android:layout_marginTop="20dp"
         android:layout_below="@+id/daily_notification"
         android:clickable="true"

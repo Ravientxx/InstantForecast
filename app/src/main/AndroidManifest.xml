@@ -38,6 +38,7 @@
         </activity>
         <activity android:name=".AddLocationActivity"></activity>
         <activity android:name="com.example.dell.instantforecast.AppSettingActivity"></activity>
+        <activity android:name=".EditLocationActivity"></activity>
     </application>
 
 </manifest>

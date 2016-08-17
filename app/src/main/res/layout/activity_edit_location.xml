@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/add_city_background"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:id="@+id/linear_layout_add_location"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:clickable="true"
+        android:orientation="horizontal"
+        android:layout_margin="20dp">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_action_add" android:layout_marginRight="20dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Add Location"
+            android:textColor="#fff"
+            android:layout_gravity="center_vertical"
+            android:textSize="@dimen/main_text_size"/>
+
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="My Locations"
+        android:textColor="#fff"
+        android:background="#000"
+        android:layout_gravity="center_vertical"
+        android:textSize="@dimen/main_text_size"
+        android:paddingLeft="20dp"/>
+
+    <com.mobeta.android.dslv.DragSortListView
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:dslv="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/dragable_list_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:divider="#fff"
+        android:dividerHeight="1dp"
+        android:layout_margin="10dp"
+        dslv:drag_handle_id="@+id/reorder_icon"
+        dslv:float_background_color="#66ffffff"/>
+</LinearLayout>

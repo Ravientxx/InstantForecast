@@ -7,7 +7,7 @@
     android:fitsSystemWindows="true"
     android:orientation="vertical"
     tools:context=".MainActivity"
-    android:background="@drawable/back">
+    android:background="@drawable/clear_sky_day">
 
     <ImageView
         android:id="@+id/background_image_view"
@@ -120,7 +120,9 @@
                 android:id="@+id/nav_menu_list"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_marginTop="200dp">
+                android:layout_marginTop="70dp"
+                android:divider="#fff"
+                android:dividerHeight="1dp">
 
             </ListView>
         </android.support.design.widget.NavigationView>

@@ -116,7 +116,7 @@ public class AppSettingActivity extends AppCompatActivity {
                 .icon(WeatherIcons.Icon.wic_cloudy)
                 .color(Color.WHITE)
                 .sizeDp(50);
-        remoteViews.setImageViewBitmap(R.id.weather_image, MainActivity.mainActivity.drawableToBitmap(iCon));
+        remoteViews.setImageViewBitmap(R.id.weather_image, GeneralUtils.drawableToBitmap(iCon));
         remoteViews.setTextViewText(R.id.city_name, "Ho Chi Minh");
         remoteViews.setTextViewText(R.id.temperature_field, "29°");
         Notification n = new NotificationCompat.Builder(AppSettingActivity.this)

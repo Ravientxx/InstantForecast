@@ -8,10 +8,6 @@ import android.graphics.Typeface;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
-import android.renderscript.Allocation;
-import android.renderscript.Element;
-import android.renderscript.RenderScript;
-import android.renderscript.ScriptIntrinsicBlur;
 import android.text.Html;
 import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
@@ -38,6 +34,7 @@ public class WeatherInfoFragment extends Fragment {
     static int screenHeight;
     static ArrayList<Bitmap> blurred_background_image;
     static Bitmap background_image;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -69,7 +66,6 @@ public class WeatherInfoFragment extends Fragment {
         screenHeight = displaymetrics.heightPixels;
 
 
-
         blurred_background_image = new ArrayList<>();
 
         mainScrollView = (ScrollView) view.findViewById(R.id.weather_info_scroll_view);
@@ -78,35 +74,37 @@ public class WeatherInfoFragment extends Fragment {
             @Override
             public void onScrollChanged() {
                 int scrollY = mainScrollView.getScrollY(); //for verticalScrollView
-                int stepScreenHeight = screenHeight/3;
+                int stepScreenHeight = screenHeight / 3;
                 //DO SOMETHING WITH THE SCROLL COORDINATES
                 //System.out.println(scrollY + " + " + isScrolled);
-                if(scrollY <= 0){
+                if (scrollY <= 0) {
                     background_image = BitmapFactory.decodeResource(MainActivity.mainActivity.getResources(), BACKGROUND_IMAGE_ID);
                     MainActivity.mainActivity.background_image_view.setImageBitmap(background_image);
                 }
-                if(scrollY > stepScreenHeight){
+                if (scrollY > stepScreenHeight) {
                     int y = screenHeight / 5;
-                    if(scrollY >= stepScreenHeight && scrollY < (stepScreenHeight + y)){
+                    if (scrollY >= stepScreenHeight && scrollY < (stepScreenHeight + y)) {
                         MainActivity.mainActivity.background_image_view.setImageBitmap(blurred_background_image.get(0));
                     }
-                    if(scrollY >= (stepScreenHeight + y) && scrollY < (stepScreenHeight + 2*y)){
+                    if (scrollY >= (stepScreenHeight + y) && scrollY < (stepScreenHeight + 2 * y)) {
                         MainActivity.mainActivity.background_image_view.setImageBitmap(blurred_background_image.get(1));
                     }
-                    if(scrollY >= (stepScreenHeight + 2*y) && scrollY < (stepScreenHeight + 3*y)){
+                    if (scrollY >= (stepScreenHeight + 2 * y) && scrollY < (stepScreenHeight + 3 * y)) {
                         MainActivity.mainActivity.background_image_view.setImageBitmap(blurred_background_image.get(2));
                     }
                 }
+                MainActivity.mainActivity.background_image_view.setScaleType(ImageView.ScaleType.CENTER);
             }
         });
     }
 
-    static public void loadWeatherInfo(final String Lat, final String Lon, final boolean doAddCity, final boolean doAddCurrentLocation) {
+    static public void loadWeatherInfo(final String locationId, final String Lat, final String Lon) {
         if (isOnline()) {
             OpenWeatherMapApiManager.placeIdTask getCurrentWeatherTask = new OpenWeatherMapApiManager.placeIdTask(new OpenWeatherMapApiManager.AsyncResponse() {
                 public void processFinish(String weather_country, String weather_city, String weather_description, String weather_temperature, String weather_humidity,
-                                          String weather_pressure, String weather_updatedOn, String weather_iconText,int conditionId, String sun_rise) {
+                                          String weather_pressure, String weather_updatedOn, String weather_iconText, int conditionId, String sun_rise) {
                     CityNowWeatherInfo current_cityNowWeatherInfo = new CityNowWeatherInfo(
+                            locationId,
                             weather_city,
                             weather_country,
                             weather_iconText,
@@ -114,26 +112,26 @@ public class WeatherInfoFragment extends Fragment {
                             Lat,
                             Lon
                     );
-                    if (doAddCity) {
-                        if (doAddCurrentLocation) {
-                            MainActivity.appDataModel.current_city = current_cityNowWeatherInfo;
-                        } else {
-                            boolean cityExisted = false;
-                            for(int i = 0; i < MainActivity.appDataModel.city_list.size(); i++){
-                                if(current_cityNowWeatherInfo.name.equals(MainActivity.appDataModel.city_list.get(i).name)){
-                                    cityExisted = true;
-                                    break;
-                                }
+                    if(!locationId.equals("get_current_location")){
+                        int locationIndex = -1;
+                        for (int i = 0; i < MainActivity.appDataModel.city_list.size(); i++) {
+                            if (current_cityNowWeatherInfo.id.equals(MainActivity.appDataModel.city_list.get(i).id)) {
+                                locationIndex = i;
+                                break;
                             }
-                            if(!cityExisted){
-                                MainActivity.appDataModel.city_list.add(current_cityNowWeatherInfo);
-                            }
-                            else{// Update City Info
-
-                            }
-                            MainActivity.mainActivity.updateNavigationMenu();
                         }
+                        if (locationIndex == -1) {
+                            MainActivity.appDataModel.city_list.add(current_cityNowWeatherInfo);
+                            EditLocationActivity.editLocationListAdapter.notifyDataSetChanged();
+                        } else {// Update City Info
+                            MainActivity.appDataModel.city_list.remove(locationIndex);
+                            MainActivity.appDataModel.city_list.add(locationIndex, current_cityNowWeatherInfo);
+                        }
+                        MainActivity.navigationMenuListAdapter.notifyDataSetChanged();
                     }
+
+
+
                     MainActivity.city_name_textview.setText(weather_city + "," + weather_country);
                     detailsField.setText(weather_description);
                     currentTemperatureField.setText(weather_temperature);
@@ -149,11 +147,11 @@ public class WeatherInfoFragment extends Fragment {
                     blurred_background_image.clear();
                     Bitmap bitmap = BitmapFactory.decodeResource(MainActivity.mainActivity.getResources(), BACKGROUND_IMAGE_ID);
                     MainActivity.mainActivity.background_image_view.setImageBitmap(bitmap);
-                    blurred_background_image.add(blur(bitmap,5f));
+                    blurred_background_image.add(GeneralUtils.blur(bitmap, 5f));
                     bitmap = BitmapFactory.decodeResource(MainActivity.mainActivity.getResources(), BACKGROUND_IMAGE_ID);
-                    blurred_background_image.add(blur(bitmap,15f));
+                    blurred_background_image.add(GeneralUtils.blur(bitmap, 15f));
                     bitmap = BitmapFactory.decodeResource(MainActivity.mainActivity.getResources(), BACKGROUND_IMAGE_ID);
-                    blurred_background_image.add(blur(bitmap,25f));
+                    blurred_background_image.add(GeneralUtils.blur(bitmap, 25f));
                 }
             });
             getCurrentWeatherTask.execute(Lat, Lon);
@@ -176,22 +174,5 @@ public class WeatherInfoFragment extends Fragment {
                 (ConnectivityManager) MainActivity.mainActivity.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo netInfo = cm.getActiveNetworkInfo();
         return netInfo != null && netInfo.isConnected();
-    }
-
-    static public Bitmap blur(Bitmap image,float radius) {
-        if (null == image) return null;
-
-        Bitmap outputBitmap = Bitmap.createBitmap(image);
-        final RenderScript renderScript = RenderScript.create(MainActivity.mainActivity);
-        Allocation tmpIn = Allocation.createFromBitmap(renderScript, image);
-        Allocation tmpOut = Allocation.createFromBitmap(renderScript, outputBitmap);
-
-        //Intrinsic Gausian blur filter
-        ScriptIntrinsicBlur theIntrinsic = ScriptIntrinsicBlur.create(renderScript, Element.U8_4(renderScript));
-        theIntrinsic.setRadius(radius);
-        theIntrinsic.setInput(tmpIn);
-        theIntrinsic.forEach(tmpOut);
-        tmpOut.copyTo(outputBitmap);
-        return outputBitmap;
     }
 }
