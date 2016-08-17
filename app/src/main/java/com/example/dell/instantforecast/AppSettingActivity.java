@@ -104,9 +104,6 @@ public class AppSettingActivity extends AppCompatActivity {
         return false;
     }
 
-
-
-
     public void activateOngoingNotification() {
         Intent intent = new Intent(AppSettingActivity.this, MainActivity.class);
         PendingIntent pIntent = PendingIntent.getActivity(AppSettingActivity.this, (int) System.currentTimeMillis(), intent, 0);

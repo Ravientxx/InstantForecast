@@ -8,6 +8,7 @@ import android.graphics.Typeface;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.support.design.widget.AppBarLayout;
 import android.text.Html;
 import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
@@ -15,6 +16,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -34,6 +36,7 @@ public class WeatherInfoFragment extends Fragment {
     static int screenHeight;
     static ArrayList<Bitmap> blurred_background_image;
     static Bitmap background_image;
+    static RelativeLayout current_condition_layout;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -43,16 +46,11 @@ public class WeatherInfoFragment extends Fragment {
     }
 
     @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-    }
-
-    @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         weatherFont = Typeface.createFromAsset(MainActivity.mainActivity.getAssets(), "fonts/weathericons-regular-webfont.ttf");
         detailsField = (TextView) view.findViewById(R.id.details_field);
-        currentTemperatureField = (TextView) view.findViewById(R.id.current_temperature_field);
+        currentTemperatureField = (TextView) view.findViewById(R.id.current_temperature);
         weatherIcon = (TextView) view.findViewById(R.id.weather_icon);
         weatherIcon.setTypeface(weatherFont);
 
@@ -65,6 +63,7 @@ public class WeatherInfoFragment extends Fragment {
         MainActivity.mainActivity.getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
         screenHeight = displaymetrics.heightPixels;
 
+        current_condition_layout = (RelativeLayout) view.findViewById(R.id.current_condition_screen);
 
         blurred_background_image = new ArrayList<>();
 
@@ -75,10 +74,7 @@ public class WeatherInfoFragment extends Fragment {
             public void onScrollChanged() {
                 int scrollY = mainScrollView.getScrollY(); //for verticalScrollView
                 int stepScreenHeight = screenHeight / 3;
-                //DO SOMETHING WITH THE SCROLL COORDINATES
-                //System.out.println(scrollY + " + " + isScrolled);
                 if (scrollY <= 0) {
-                    background_image = BitmapFactory.decodeResource(MainActivity.mainActivity.getResources(), BACKGROUND_IMAGE_ID);
                     MainActivity.mainActivity.background_image_view.setImageBitmap(background_image);
                 }
                 if (scrollY > stepScreenHeight) {
@@ -112,7 +108,7 @@ public class WeatherInfoFragment extends Fragment {
                             Lat,
                             Lon
                     );
-                    if(!locationId.equals("get_current_location")){
+                    if (!locationId.equals("get_current_location")) {
                         int locationIndex = -1;
                         for (int i = 0; i < MainActivity.appDataModel.city_list.size(); i++) {
                             if (current_cityNowWeatherInfo.id.equals(MainActivity.appDataModel.city_list.get(i).id)) {
@@ -131,7 +127,6 @@ public class WeatherInfoFragment extends Fragment {
                     }
 
 
-
                     MainActivity.city_name_textview.setText(weather_city + "," + weather_country);
                     detailsField.setText(weather_description);
                     currentTemperatureField.setText(weather_temperature);
@@ -143,10 +138,16 @@ public class WeatherInfoFragment extends Fragment {
                     max_temperature.setText("30°");
                     min_temperature.setText("24°");
 
+
+                    System.out.println(MainActivity.toolbar.getHeight());
+                    WeatherInfoFragment.current_condition_layout.setMinimumHeight(screenHeight - MainActivity.toolbar.getHeight());
+
                     BACKGROUND_IMAGE_ID = conditionId;
                     blurred_background_image.clear();
                     Bitmap bitmap = BitmapFactory.decodeResource(MainActivity.mainActivity.getResources(), BACKGROUND_IMAGE_ID);
-                    MainActivity.mainActivity.background_image_view.setImageBitmap(bitmap);
+                    background_image = BitmapFactory.decodeResource(MainActivity.mainActivity.getResources(), BACKGROUND_IMAGE_ID);
+                    MainActivity.mainActivity.background_image_view.setImageBitmap(background_image);
+
                     blurred_background_image.add(GeneralUtils.blur(bitmap, 5f));
                     bitmap = BitmapFactory.decodeResource(MainActivity.mainActivity.getResources(), BACKGROUND_IMAGE_ID);
                     blurred_background_image.add(GeneralUtils.blur(bitmap, 15f));

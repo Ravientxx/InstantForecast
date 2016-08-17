@@ -8,6 +8,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.os.Bundle;
+import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -15,6 +16,7 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.DisplayMetrics;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -22,6 +24,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.google.gson.Gson;
@@ -106,6 +109,7 @@ public class MainActivity extends AppCompatActivity {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         mainActivity = this;
+        gpsTracker = new GPSTracker(this);
         //Set layout for activity
         setContentView(R.layout.activity_main);
 
@@ -123,13 +127,14 @@ public class MainActivity extends AppCompatActivity {
             actionBar.setSubtitle("");
             actionBar.setElevation(0);
         }
+
         //Init Joda-Time library
         JodaTimeAndroid.init(this);
 
         initNavigationMenu();
 
         background_image_view = (ImageView) findViewById(R.id.background_image_view);
-        gpsTracker = new GPSTracker(mainActivity);
+
     }
 
     @Override
