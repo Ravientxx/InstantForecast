@@ -9,6 +9,7 @@ import android.graphics.Typeface;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.support.design.widget.AppBarLayout;
 import android.text.Html;
 import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
@@ -36,7 +37,11 @@ public class WeatherInfoFragment extends Fragment {
     static int screenHeight;
     static ArrayList<Bitmap> blurred_background_image;
     static Bitmap background_image;
+<<<<<<< HEAD
     RelativeLayout mapl, clickMap;
+=======
+    static RelativeLayout current_condition_layout;
+>>>>>>> 2748d41c1b9aac50d50075be8d0ccab0e9dac96e
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -68,6 +73,7 @@ public class WeatherInfoFragment extends Fragment {
         MainActivity.mainActivity.getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
         screenHeight = displaymetrics.heightPixels;
 
+<<<<<<< HEAD
         mapl = (RelativeLayout)view.findViewById(R.id.map);
         mapl.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -85,6 +91,9 @@ public class WeatherInfoFragment extends Fragment {
                 startActivity(intent);
             }
         });
+=======
+        current_condition_layout = (RelativeLayout) view.findViewById(R.id.current_condition_screen);
+>>>>>>> 2748d41c1b9aac50d50075be8d0ccab0e9dac96e
 
         blurred_background_image = new ArrayList<>();
 
