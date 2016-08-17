@@ -16,9 +16,6 @@ import java.util.Locale;
 
 public class OpenWeatherMapApiManager {
 
-    // Project Created by Ferdousur Rahman Shajib
-    // www.androstock.com
-
     private static final String OPEN_WEATHER_MAP_URL =
             "http://api.openweathermap.org/data/2.5/weather?lat=%s&lon=%s&units=metric";
 
@@ -59,10 +56,58 @@ public class OpenWeatherMapApiManager {
         return icon;
     }
 
+    public static int setConditionId(String Id){
+        int conditionId = 0;
+        switch (Id){
+            case "01d":
+                conditionId = R.drawable.clear_sky_day;
+                break;
+            case "01n":
+                conditionId = R.drawable.clear_sky_night;
+                break;
+            case "02d":
+                conditionId = R.drawable.few_cloud_day;
+                break;
+            case "02n":
+                conditionId = R.drawable.few_cloud_night;
+                break;
+            case "03d":
+            case "04d":
+                conditionId = R.drawable.scatter_day;
+                break;
+            case "03n":
+            case "04n":
+                conditionId = R.drawable.scatter_night;
+                break;
+            case "09d":
+            case "09n":
+                conditionId = R.drawable.shower_rain;
+                break;
+            case "10d":
+                conditionId = R.drawable.rain_day;
+                break;
+            case "10n":
+                conditionId = R.drawable.rain_night;
+                break;
+            case "11d":
+            case "11n":
+                conditionId = R.drawable.thundstorm;
+                break;
+            case "13d":
+            case "13n":
+                conditionId = R.drawable.snow;
+                break;
+            case "50d":
+            case "50n":
+                conditionId = R.drawable.mist;
+                break;
+        }
 
+        return conditionId;
+    }
     public interface AsyncResponse {
 
-        void processFinish(String output1, String output2, String output3, String output4, String output5, String output6, String output7, String output8,String output9);
+        void processFinish(String output1, String output2, String output3, String output4, String output5, String output6, String output7, String output8,int output9,String output10);
     }
 
 
@@ -106,8 +151,8 @@ public class OpenWeatherMapApiManager {
                     String iconText = setWeatherIcon(details.getInt("id"),
                             json.getJSONObject("sys").getLong("sunrise") * 1000,
                             json.getJSONObject("sys").getLong("sunset") * 1000);
-
-                    delegate.processFinish(country ,city, description, temperature, humidity, pressure, updatedOn, iconText, "" + (json.getJSONObject("sys").getLong("sunrise") * 1000));
+                    int conditionId = setConditionId(details.getString("icon"));
+                    delegate.processFinish(country ,city, description, temperature, humidity, pressure, updatedOn, iconText,conditionId, "" + (json.getJSONObject("sys").getLong("sunrise") * 1000));
 
                 }
             } catch (JSONException e) {

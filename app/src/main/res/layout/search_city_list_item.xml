@@ -3,9 +3,8 @@
     android:id="@android:id/text1"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:textAppearance="?android:attr/textAppearanceListItemSmall"
+    android:layout_margin="10dp"
     android:gravity="center_vertical"
-    android:textColor="#ffffff"
-    android:paddingLeft="10px"
-    android:paddingRight="10px"
-    android:minHeight="?android:attr/listPreferredItemHeightSmall" />
+    android:minHeight="?android:attr/listPreferredItemHeightSmall"
+    android:textAppearance="?android:attr/textAppearanceListItemSmall"
+    android:textColor="#ffffff" />

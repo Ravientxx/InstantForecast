@@ -30,6 +30,7 @@ import java.util.ArrayList;
  */
 public class WeatherInfoFragment extends Fragment {
 
+    static int BACKGROUND_IMAGE_ID;
     static TextView detailsField, currentTemperatureField, max_temperature, min_temperature, weatherIcon;
     static ImageView max_img, min_img;
     static Typeface weatherFont;
@@ -81,7 +82,7 @@ public class WeatherInfoFragment extends Fragment {
                 //DO SOMETHING WITH THE SCROLL COORDINATES
                 //System.out.println(scrollY + " + " + isScrolled);
                 if(scrollY <= 0){
-                    background_image = BitmapFactory.decodeResource(MainActivity.mainActivity.getResources(), R.drawable.back);
+                    background_image = BitmapFactory.decodeResource(MainActivity.mainActivity.getResources(), BACKGROUND_IMAGE_ID);
                     MainActivity.mainActivity.background_image_view.setImageBitmap(background_image);
                 }
                 if(scrollY > stepScreenHeight){
@@ -103,7 +104,8 @@ public class WeatherInfoFragment extends Fragment {
     static public void loadWeatherInfo(final String Lat, final String Lon, final boolean doAddCity, final boolean doAddCurrentLocation) {
         if (isOnline()) {
             OpenWeatherMapApiManager.placeIdTask getCurrentWeatherTask = new OpenWeatherMapApiManager.placeIdTask(new OpenWeatherMapApiManager.AsyncResponse() {
-                public void processFinish(String weather_country, String weather_city, String weather_description, String weather_temperature, String weather_humidity, String weather_pressure, String weather_updatedOn, String weather_iconText, String sun_rise) {
+                public void processFinish(String weather_country, String weather_city, String weather_description, String weather_temperature, String weather_humidity,
+                                          String weather_pressure, String weather_updatedOn, String weather_iconText,int conditionId, String sun_rise) {
                     CityNowWeatherInfo current_cityNowWeatherInfo = new CityNowWeatherInfo(
                             weather_city,
                             weather_country,
@@ -143,12 +145,14 @@ public class WeatherInfoFragment extends Fragment {
                     max_temperature.setText("30°");
                     min_temperature.setText("24°");
 
+                    BACKGROUND_IMAGE_ID = conditionId;
                     blurred_background_image.clear();
-                    Bitmap bitmap = BitmapFactory.decodeResource(MainActivity.mainActivity.getResources(), R.drawable.back);
+                    Bitmap bitmap = BitmapFactory.decodeResource(MainActivity.mainActivity.getResources(), BACKGROUND_IMAGE_ID);
+                    MainActivity.mainActivity.background_image_view.setImageBitmap(bitmap);
                     blurred_background_image.add(blur(bitmap,5f));
-                    bitmap = BitmapFactory.decodeResource(MainActivity.mainActivity.getResources(), R.drawable.back);
+                    bitmap = BitmapFactory.decodeResource(MainActivity.mainActivity.getResources(), BACKGROUND_IMAGE_ID);
                     blurred_background_image.add(blur(bitmap,15f));
-                    bitmap = BitmapFactory.decodeResource(MainActivity.mainActivity.getResources(), R.drawable.back);
+                    bitmap = BitmapFactory.decodeResource(MainActivity.mainActivity.getResources(), BACKGROUND_IMAGE_ID);
                     blurred_background_image.add(blur(bitmap,25f));
                 }
             });

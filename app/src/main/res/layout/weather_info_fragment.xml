@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     android:fillViewport="true"
     android:scrollbars="none"
-    android:paddingTop="50dp"
+    android:paddingTop="55dp"
     android:id="@+id/weather_info_scroll_view">
 
     <LinearLayout
