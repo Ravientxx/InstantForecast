@@ -152,6 +152,7 @@
             android:layout_width="match_parent"
             android:layout_height="100dp"
             android:background="#59000000"
+            android:id="@+id/map"
             android:layout_margin="10dp">
             <TextView
                 android:text="ABC"
@@ -175,6 +176,7 @@
             android:layout_width="match_parent"
             android:layout_height="100dp"
             android:background="#59000000"
+            android:id="@+id/mapClick"
             android:layout_margin="10dp">
             <TextView
                 android:text="ABC"

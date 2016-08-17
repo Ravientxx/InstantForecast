@@ -2,6 +2,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.dell.instantforecast">
 
+    <permission
+        android:name="info.devexchanges.googlelocation.permission.MAPS_RECEIVE"
+        android:protectionLevel="signature" />
+
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="com.google.android.providers.gsf.permission.READ_GSERVICES" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -13,6 +19,14 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
+
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyDi0MBAbCXu9p-Ft_j1i0673D15VNzojyo"/>
 
         <!-- Main activity -->
         <activity
@@ -38,6 +52,8 @@
         </activity>
         <activity android:name=".AddLocationActivity"></activity>
         <activity android:name="com.example.dell.instantforecast.AppSettingActivity"></activity>
+        <activity android:name="com.example.dell.instantforecast.MapActivity"></activity>
+        <activity android:name="com.example.dell.instantforecast.CoordinateActivity"></activity>
         <activity android:name=".EditLocationActivity"></activity>
     </application>
 
