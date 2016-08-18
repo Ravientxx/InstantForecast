@@ -3,6 +3,7 @@ package com.example.dell.instantforecast;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -33,6 +34,9 @@ public class MapActivity extends AppCompatActivity{
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
+
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setHomeButtonEnabled(true);
 
         String[] tileName = new String[]{"Clouds", "Temperature", "Precipitations", "Snow", "Rain", "Wind", "Sea level press."};
         ArrayAdapter<String> adpt = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, tileName);
@@ -87,12 +91,13 @@ public class MapActivity extends AppCompatActivity{
     }
 
     public void setUpMapIfNeeded(){
-        if(map != null){
+        if(map == null){
             SupportMapFragment fragment = (SupportMapFragment)getSupportFragmentManager().findFragmentById(R.id.map);
             fragment.getMapAsync(new OnMapReadyCallback() {
                 @Override
                 public void onMapReady(GoogleMap googleMap) {
                     map = googleMap;
+                    //googleMap.setMapType(GoogleMap.MAP_TYPE_NONE);
                     if(map != null){
                         setUpMap();
                     }
@@ -102,7 +107,15 @@ public class MapActivity extends AppCompatActivity{
     }
 
     private void setUpMap(){
-        tileOverlay = map.addTileOverlay(new TileOverlayOptions().tileProvider(createTransparentTileProvider()));
+        tileOverlay = map.addTileOverlay(new TileOverlayOptions().tileProvider(createTileProvider()).transparency(0.5f));
+        updateTileOverlayTransparency();
+    }
+
+    public void updateTileOverlayTransparency() {
+        if (tileOverlay != null) {
+            // Switch between 0.0f and 0.5f transparency.
+            tileOverlay.setTransparency(0.5f - tileOverlay.getTransparency());
+        }
     }
 
     private TileProvider createTransparentTileProvider(){
@@ -110,10 +123,12 @@ public class MapActivity extends AppCompatActivity{
     }
 
     public TileProvider createTileProvider(){
-        TileProvider tileProvider = new UrlTileProvider(256, 256) {
+        TileProvider tileProvider = new UrlTileProvider(512, 512) {
+
             @Override
-            public URL getTileUrl(int i, int i1, int i2) {
-                String fUrl = String.format(TransparentTileOWM.OWM_TILE_URL, tileType == null ? "clouds" : tileType, i2, i, i1);
+            public synchronized  URL getTileUrl(int i, int i1, int i2) {
+                int reversedY = (1 << i2) - i1 - 1;
+                String fUrl = String.format(TransparentTileOWM.OWM_TILE_URL, tileType == null ? "clouds" : tileType, i2, i, reversedY);
                 URL url = null;
                 try{
                     url = new URL(fUrl);
@@ -121,10 +136,16 @@ public class MapActivity extends AppCompatActivity{
                 catch (MalformedURLException e){
                     e.printStackTrace();
                 }
-                return null;
+                return url;
             }
         };
 
         return tileProvider;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        finish();
+        return false;
     }
 }

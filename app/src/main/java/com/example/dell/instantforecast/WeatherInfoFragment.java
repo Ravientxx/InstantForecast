@@ -13,11 +13,19 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapView;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.CameraPosition;
+import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
 
@@ -34,7 +42,10 @@ public class WeatherInfoFragment extends Fragment {
     static int screenHeight;
     static ArrayList<Bitmap> blurred_background_image;
     static Bitmap background_image;
-    RelativeLayout mapl;
+    RelativeLayout mapl, clickMap;
+    static GoogleMap map;
+    MapView mapView;
+    Button clickl;
     static RelativeLayout current_condition_layout;
 
     @Override
@@ -66,15 +77,25 @@ public class WeatherInfoFragment extends Fragment {
         DisplayMetrics displaymetrics = new DisplayMetrics();
         MainActivity.mainActivity.getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
         screenHeight = displaymetrics.heightPixels;
-
-        mapl = (RelativeLayout)view.findViewById(R.id.map);
-        mapl.setOnClickListener(new View.OnClickListener() {
+        clickl = (Button)view.findViewById(R.id.button);
+        clickl.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(getActivity(), MapActivity.class);
                 startActivity(intent);
             }
         });
+        mapView = (MapView)view.findViewById(R.id.mapview);
+        mapView.onCreate(savedInstanceState);
+        mapView.getMapAsync(new OnMapReadyCallback() {
+            @Override
+            public void onMapReady(GoogleMap googleMap) {
+                map = googleMap;
+
+            }
+        });
+
+        current_condition_layout = (RelativeLayout) view.findViewById(R.id.current_condition_screen);
         blurred_background_image = new ArrayList<>();
 
         current_condition_layout = (RelativeLayout) view.findViewById(R.id.current_condition_screen);
@@ -121,6 +142,19 @@ public class WeatherInfoFragment extends Fragment {
                             Lat,
                             Lon
                     );
+
+                    MainActivity.appDataModel.current_city = current_locationWeatherInfo;
+
+                    //CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(new LatLng(Double.parseDouble(MainActivity.appDataModel.current_city.lat), Double.parseDouble(MainActivity.appDataModel.current_city.lon)), 13);
+                    CameraPosition cameraPosition = new CameraPosition.Builder().target(new LatLng(Double.parseDouble(MainActivity.appDataModel.current_city.lat),
+                            Double.parseDouble(MainActivity.appDataModel.current_city.lon)))
+                            .zoom(15)
+                            .tilt(40)
+                            .build();
+
+                    map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+                    map.getUiSettings().setAllGesturesEnabled(true);
+                    map.getUiSettings().setZoomControlsEnabled(true);
                     if(!locationId.equals("get_current_location")){
                         int locationIndex = -1;
                         for (int i = 0; i < MainActivity.appDataModel.city_list.size(); i++) {

@@ -166,6 +166,7 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(new Intent(MainActivity.this, AppSettingActivity.class));
                 return true;
             case R.id.action_abouts:
+                background_image_view.setImageResource(R.drawable.rain_day);
                 //clearAppData();
                 //updateNavigationMenuList();
                 return true;
