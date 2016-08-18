@@ -122,7 +122,7 @@ public class WelcomeActivity extends AppCompatActivity {
                 public void onClick(View v) {
                     ImageView ve = (ImageView)v.findViewById(R.id.click);
                     if(ve.getVisibility()==View.GONE) {
-                        
+
                         imageView.setVisibility(View.VISIBLE);
                         TextView textView1 = (TextView) v.findViewById(R.id.txtCity);
                         String str = textView1.getText().toString();
