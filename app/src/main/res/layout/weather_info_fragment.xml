@@ -177,30 +177,6 @@
                 android:textColor="#FFFFFF"
                 android:layout_alignParentBottom="true"/>
         </RelativeLayout>
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="100dp"
-            android:background="#59000000"
-            android:id="@+id/mapClick"
-            android:layout_margin="10dp">
-            <TextView
-                android:text="ABC"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textColor="#FFFFFF"
-                android:textSize="45dp"
-                android:layout_alignParentTop="true"
-                android:layout_marginBottom="10dp"/>
-
-            <TextView
-                android:text="def"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:padding="10dp"
-                android:textAppearance="?android:attr/textAppearanceMedium"
-                android:textColor="#FFFFFF"
-                android:layout_alignParentBottom="true"/>
-        </RelativeLayout>
     </LinearLayout>
 
 

@@ -1,6 +1,5 @@
 package com.example.dell.instantforecast;
 
-import android.app.NotificationManager;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -8,10 +7,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.Button;
 import android.widget.LinearLayout;
-import android.widget.ListView;
-import android.widget.TextView;
 
 import com.mobeta.android.dslv.DragSortListView;
 
@@ -43,13 +39,20 @@ public class EditLocationActivity extends AppCompatActivity {
                 startActivity(new Intent(EditLocationActivity.this,AddLocationActivity.class));
             }
         });
+        LinearLayout add_location_map = (LinearLayout) findViewById(R.id.linear_layout_add_location_map);
+        add_location_map.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(EditLocationActivity.this, AddLocationMapActivity.class));
+            }
+        });
         final DragSortListView dragSortListView = (DragSortListView) findViewById(R.id.dragable_list_view);
         editLocationListAdapter = new EditLocationListAdapter(EditLocationActivity.this,MainActivity.appDataModel.city_list);
         dragSortListView.setAdapter(editLocationListAdapter);
 
         dragSortListView.setDropListener(new DragSortListView.DropListener() {
             @Override public void drop(int from, int to) {
-                CityNowWeatherInfo item = editLocationListAdapter.listModels.get(from);
+                LocationWeatherInfo item = editLocationListAdapter.listModels.get(from);
                 editLocationListAdapter.listModels.remove(from);
                 if (from > to) --from;
                 editLocationListAdapter.listModels.add(to, item);

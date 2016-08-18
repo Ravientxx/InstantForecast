@@ -3,11 +3,9 @@ package com.example.dell.instantforecast;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -20,20 +18,29 @@ import android.widget.Button;
 import android.widget.RemoteViews;
 import android.widget.TextView;
 
+import com.google.gson.Gson;
 import com.mikepenz.iconics.IconicsDrawable;
 import com.mikepenz.weather_icons_typeface_library.WeatherIcons;
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 
 /**
  * Created by Dell on 7/23/2016.
  */
 public class AppSettingActivity extends AppCompatActivity {
 
+    final String FILENAME = "AppSettingData";
     static AppSettingActivity currentSetting;
     static boolean usingCelcius;
     final int DAILY_NOTIFICATION_ID = 1507;
     final int ONGOING_NOTIFICATION_ID = 2205;
-    String city_name,detail_field,icon_string,temperature_field;
 
+    Button C_Button,F_Button;
+    static AppSetting appSetting;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -44,12 +51,13 @@ public class AppSettingActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_app_setting);
 
+        currentSetting = this;
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
         getSupportActionBar().setTitle("Settings");
 
-        final Button C_Button = (Button) findViewById(R.id.celcius_button);
-        final Button F_Button = (Button) findViewById(R.id.fahrenheit_button);
+        C_Button = (Button) findViewById(R.id.celcius_button);
+        F_Button = (Button) findViewById(R.id.fahrenheit_button);
         if (C_Button != null && F_Button != null) {
             C_Button.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -57,6 +65,7 @@ public class AppSettingActivity extends AppCompatActivity {
                     C_Button.setBackgroundColor(getResources().getColor(R.color.switch_button_on));
                     F_Button.setBackgroundColor(getResources().getColor(R.color.switch_button_off));
                     usingCelcius = true;
+                    appSetting.Unit = "C";
                 }
             });
             F_Button.setOnClickListener(new View.OnClickListener() {
@@ -65,6 +74,7 @@ public class AppSettingActivity extends AppCompatActivity {
                     C_Button.setBackgroundColor(getResources().getColor(R.color.switch_button_off));
                     F_Button.setBackgroundColor(getResources().getColor(R.color.switch_button_on));
                     usingCelcius = false;
+                    appSetting.Unit = "F";
                 }
             });
         }
@@ -73,9 +83,10 @@ public class AppSettingActivity extends AppCompatActivity {
             dailyNotification.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    NotificationManager notificationManager =
-                            (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-                    notificationManager.cancel(DAILY_NOTIFICATION_ID);
+//                    NotificationManager notificationManager =
+//                            (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+//                    notificationManager.cancel(DAILY_NOTIFICATION_ID);
+                    startActivity(new Intent(AppSettingActivity.this,DailyNotificationActivity.class));
                 }
             });
         }
@@ -90,6 +101,24 @@ public class AppSettingActivity extends AppCompatActivity {
             });
         }
 
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        loadSetting();
+        if(appSetting.Unit.equals("C")){
+            C_Button.callOnClick();
+        }
+        else{
+            F_Button.callOnClick();
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        saveSetting();
     }
 
     @Override
@@ -119,7 +148,6 @@ public class AppSettingActivity extends AppCompatActivity {
         Notification n = new NotificationCompat.Builder(AppSettingActivity.this)
                 .setContent(remoteViews)
                 .setContentIntent(pIntent)
-                .setSmallIcon(R.drawable.ic_launcher)
                 .setOngoing(true)
                 .build();
 
@@ -127,5 +155,38 @@ public class AppSettingActivity extends AppCompatActivity {
                 (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 
         notificationManager.notify(DAILY_NOTIFICATION_ID, n);
+    }
+
+    public void saveSetting(){
+        String string = new Gson().toJson(appSetting, AppSetting.class);
+        try {
+            FileOutputStream out = openFileOutput(FILENAME, Context.MODE_PRIVATE);
+            OutputStreamWriter fos = new OutputStreamWriter(out, "UTF-8");
+            fos.write(string);
+            fos.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    public void loadSetting(){
+        String string1 = "";
+        try {
+            FileInputStream inputStream = openFileInput(FILENAME);
+            InputStreamReader fin = new InputStreamReader(inputStream, "UTF-8");
+            int i = 0;
+            while ((i = fin.read()) != -1) {
+                string1 += (char) i;
+            }
+            fin.close();
+            appSetting = new Gson().fromJson(string1, AppSetting.class);
+            System.out.println(string1);
+        } catch (FileNotFoundException e) {
+            appSetting = new AppSetting();
+            appSetting.isDailyNotificationActivated = false;
+            appSetting.isOngoingNotificationActivated = false;
+            appSetting.Unit = "C";
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

@@ -2,13 +2,8 @@ package com.example.dell.instantforecast;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.os.Bundle;
-import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -16,7 +11,6 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.DisplayMetrics;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -24,7 +18,6 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.google.gson.Gson;
@@ -40,7 +33,7 @@ import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
-    final String FILENAME = "AppCityData";
+    final String FILENAME = "AppLocationData";
     static AppDataModel appDataModel = new AppDataModel();
     static NavigationMenuListAdapter navigationMenuListAdapter;
     boolean firstStart = true;
@@ -215,7 +208,7 @@ public class MainActivity extends AppCompatActivity {
             appDataModel = new Gson().fromJson(string1, AppDataModel.class);
             System.out.println(string1);
         } catch (FileNotFoundException e) {
-            appDataModel.city_list = new ArrayList<CityNowWeatherInfo>();
+            appDataModel.city_list = new ArrayList<LocationWeatherInfo>();
             dataFileNotFound = true;
         } catch (Exception e) {
             e.printStackTrace();

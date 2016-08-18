@@ -22,7 +22,6 @@ android {
     }
     sourceSets { main { res.srcDirs = ['src/main/res', 'src/main/res/background_image'] } }
 }
-
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     testCompile 'junit:junit:4.12'
@@ -36,6 +35,7 @@ dependencies {
     compile 'com.mikepenz:weather-icons-typeface:2.0.10.2@aar'
     compile 'com.google.firebase:firebase-database:9.4.0'
     compile 'asia.ivity.android:drag-sort-listview:1.0'
+    compile 'com.github.PhilJay:MPAndroidChart:v3.0.0-beta1'
 }
 
 apply plugin: 'com.google.gms.google-services'

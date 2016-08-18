@@ -26,7 +26,7 @@
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyDi0MBAbCXu9p-Ft_j1i0673D15VNzojyo"/>
+            android:value="AIzaSyD9zx-hn0i_8qiGL4jCAH-7oriX37qdQvo"/>
 
         <!-- Main activity -->
         <activity
@@ -53,8 +53,9 @@
         <activity android:name=".AddLocationActivity"></activity>
         <activity android:name="com.example.dell.instantforecast.AppSettingActivity"></activity>
         <activity android:name="com.example.dell.instantforecast.MapActivity"></activity>
-        <activity android:name="com.example.dell.instantforecast.CoordinateActivity"></activity>
+        <activity android:name=".AddLocationMapActivity"></activity>
         <activity android:name=".EditLocationActivity"></activity>
+        <activity android:name=".DailyNotificationActivity"></activity>
     </application>
 
 </manifest>

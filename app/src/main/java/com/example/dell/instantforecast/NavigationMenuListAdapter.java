@@ -17,9 +17,9 @@ import java.util.ArrayList;
  */
 public class NavigationMenuListAdapter extends BaseAdapter {
     public Context contextListView;
-    ArrayList<CityNowWeatherInfo> listModels;
+    ArrayList<LocationWeatherInfo> listModels;
 
-    NavigationMenuListAdapter(Context context,ArrayList<CityNowWeatherInfo> city_list){
+    NavigationMenuListAdapter(Context context,ArrayList<LocationWeatherInfo> city_list){
         contextListView = context;
         listModels = city_list;
     }
@@ -40,20 +40,20 @@ public class NavigationMenuListAdapter extends BaseAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        final CityNowWeatherInfo current_city = listModels.get(position);
+        final LocationWeatherInfo current_city = listModels.get(position);
 
         if (convertView == null) {
             LayoutInflater inflater = (LayoutInflater) contextListView.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             convertView = inflater.inflate(R.layout.nav_menu_list_item, parent, false);
         }
-        TextView weatherIcon = (TextView) convertView.findViewById(R.id.weather_icon);
-        TextView cityName = (TextView) convertView.findViewById(R.id.city_name);
-        TextView temperature = (TextView) convertView.findViewById(R.id.temperature_field);
+        final TextView weatherIcon = (TextView) convertView.findViewById(R.id.weather_icon);
+        final TextView cityName = (TextView) convertView.findViewById(R.id.city_name);
+        final TextView temperature = (TextView) convertView.findViewById(R.id.temperature_field);
 
-        Typeface weatherFont = Typeface.createFromAsset(convertView.getContext().getAssets(), "fonts/weathericons-regular-webfont.ttf");
+        final Typeface weatherFont = Typeface.createFromAsset(convertView.getContext().getAssets(), "fonts/weathericons-regular-webfont.ttf");
         weatherIcon .setText(Html.fromHtml(current_city.weatherIconText));
         weatherIcon.setTypeface(weatherFont);
-        cityName.setText(current_city.name);
+        cityName.setText(current_city.name+", "+current_city.country);
         temperature.setText(current_city.temperature);
 
         convertView.setOnClickListener(new View.OnClickListener() {

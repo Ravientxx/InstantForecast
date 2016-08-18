@@ -8,7 +8,7 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     tools:context=".AddLocationActivity"
     android:orientation="vertical"
-    android:background="@color/add_city_background">
+    android:background="@color/main_background">
 
     <SearchView
         android:id="@+id/searchCity"
