@@ -45,7 +45,7 @@ public class TransparentTileOWM implements TileProvider {
             stream = new ByteArrayOutputStream();
             bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
             byte[] byteArray = stream.toByteArray();
-            tile = new Tile(256, 256, byteArray);
+            tile = new Tile(512, 512, byteArray);
         }
         catch (IOException e){
             e.printStackTrace();

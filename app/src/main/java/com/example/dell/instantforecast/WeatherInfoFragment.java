@@ -6,6 +6,8 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
+import android.location.Location;
+import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
@@ -16,11 +18,21 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.google.android.gms.maps.CameraUpdate;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapView;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.CameraPosition;
+import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
 
@@ -37,11 +49,12 @@ public class WeatherInfoFragment extends Fragment {
     static int screenHeight;
     static ArrayList<Bitmap> blurred_background_image;
     static Bitmap background_image;
-<<<<<<< HEAD
     RelativeLayout mapl, clickMap;
-=======
+    static GoogleMap map;
+    MapView mapView;
+    Button clickl;
     static RelativeLayout current_condition_layout;
->>>>>>> 2748d41c1b9aac50d50075be8d0ccab0e9dac96e
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -60,7 +73,7 @@ public class WeatherInfoFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         weatherFont = Typeface.createFromAsset(MainActivity.mainActivity.getAssets(), "fonts/weathericons-regular-webfont.ttf");
         detailsField = (TextView) view.findViewById(R.id.details_field);
-        currentTemperatureField = (TextView) view.findViewById(R.id.current_temperature_field);
+        currentTemperatureField = (TextView) view.findViewById(R.id.current_temperature);
         weatherIcon = (TextView) view.findViewById(R.id.weather_icon);
         weatherIcon.setTypeface(weatherFont);
 
@@ -72,14 +85,21 @@ public class WeatherInfoFragment extends Fragment {
         DisplayMetrics displaymetrics = new DisplayMetrics();
         MainActivity.mainActivity.getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
         screenHeight = displaymetrics.heightPixels;
-
-<<<<<<< HEAD
-        mapl = (RelativeLayout)view.findViewById(R.id.map);
-        mapl.setOnClickListener(new View.OnClickListener() {
+        clickl = (Button)view.findViewById(R.id.button);
+        clickl.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(getActivity(), MapActivity.class);
                 startActivity(intent);
+            }
+        });
+        mapView = (MapView)view.findViewById(R.id.mapview);
+        mapView.onCreate(savedInstanceState);
+        mapView.getMapAsync(new OnMapReadyCallback() {
+            @Override
+            public void onMapReady(GoogleMap googleMap) {
+                map = googleMap;
+
             }
         });
 
@@ -91,10 +111,8 @@ public class WeatherInfoFragment extends Fragment {
                 startActivity(intent);
             }
         });
-=======
-        current_condition_layout = (RelativeLayout) view.findViewById(R.id.current_condition_screen);
->>>>>>> 2748d41c1b9aac50d50075be8d0ccab0e9dac96e
 
+        current_condition_layout = (RelativeLayout) view.findViewById(R.id.current_condition_screen);
         blurred_background_image = new ArrayList<>();
 
         mainScrollView = (ScrollView) view.findViewById(R.id.weather_info_scroll_view);
@@ -141,6 +159,19 @@ public class WeatherInfoFragment extends Fragment {
                             Lat,
                             Lon
                     );
+
+                    MainActivity.appDataModel.current_city = current_cityNowWeatherInfo;
+
+                    //CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(new LatLng(Double.parseDouble(MainActivity.appDataModel.current_city.lat), Double.parseDouble(MainActivity.appDataModel.current_city.lon)), 13);
+                    CameraPosition cameraPosition = new CameraPosition.Builder().target(new LatLng(Double.parseDouble(MainActivity.appDataModel.current_city.lat),
+                            Double.parseDouble(MainActivity.appDataModel.current_city.lon)))
+                            .zoom(15)
+                            .tilt(40)
+                            .build();
+
+                    map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+                    map.getUiSettings().setAllGesturesEnabled(true);
+                    map.getUiSettings().setZoomControlsEnabled(true);
                     if(!locationId.equals("get_current_location")){
                         int locationIndex = -1;
                         for (int i = 0; i < MainActivity.appDataModel.city_list.size(); i++) {
@@ -152,7 +183,7 @@ public class WeatherInfoFragment extends Fragment {
                         if (locationIndex == -1) {
                             MainActivity.appDataModel.city_list.add(current_cityNowWeatherInfo);
                             EditLocationActivity.editLocationListAdapter.notifyDataSetChanged();
-                        } else {// Update City Info
+                        } else {// Update city Info
                             MainActivity.appDataModel.city_list.remove(locationIndex);
                             MainActivity.appDataModel.city_list.add(locationIndex, current_cityNowWeatherInfo);
                         }

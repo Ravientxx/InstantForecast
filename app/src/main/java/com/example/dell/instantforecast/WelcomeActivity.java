@@ -15,18 +15,26 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.HorizontalScrollView;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import java.util.ArrayList;
+import java.util.zip.Inflater;
 
 public class WelcomeActivity extends AppCompatActivity {
 
     private ViewPager viewPager;
     private MyViewPagerAdapter myViewPagerAdapter;
     private LinearLayout dotsLayout;
+    private TextView txtClick;
     private TextView[] dots;
     private int[] layouts;
     private Button btnSkip, btnNext;
     private PreferenceManager prefManager;
+    private LinearLayout scrollView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,6 +45,7 @@ public class WelcomeActivity extends AppCompatActivity {
             launchHomeScreen();
             finish();
         }
+
 
         // Making notification bar transparent
         if (Build.VERSION.SDK_INT >= 21) {
@@ -85,12 +94,62 @@ public class WelcomeActivity extends AppCompatActivity {
                 if (current < layouts.length) {
                     // move to next screen
                     viewPager.setCurrentItem(current);
+
+
+                    addCity();
+
                 } else {
                     launchHomeScreen();
                 }
             }
         });
         getSupportActionBar().hide();
+    }
+
+    String[] cities = { "New York", "Ha Noi", "Thanh Hoa", "London"};
+    ArrayList<String> array = new ArrayList<>();
+    int i = 0;
+    boolean isClicked = true;
+    private synchronized void addCity(){
+        LayoutInflater inflater = (LayoutInflater)getSystemService(LAYOUT_INFLATER_SERVICE);
+        scrollView = (LinearLayout) findViewById(R.id.liner);
+        txtClick = (TextView)findViewById(R.id.txtContinue);
+        for(i = 0; i < 4; i++){
+            View view = inflater.inflate(R.layout.item_city, null, false);
+            final ImageView imageView = (ImageView)view.findViewById(R.id.click);
+            final TextView textView = (TextView)view.findViewById(R.id.txtCity);
+            LinearLayout linearLayout = (LinearLayout)view.findViewById(R.id.llCity);
+            linearLayout.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if(isClicked) {
+                        isClicked = false;
+                        imageView.setVisibility(View.VISIBLE);
+                        TextView textView1 = (TextView) v.findViewById(R.id.txtCity);
+                        String str = textView1.getText().toString();
+                        array.add(str);
+                    }
+                    else {
+                        imageView.setVisibility(View.GONE);
+                        isClicked = true;
+                        TextView textView1 = (TextView) v.findViewById(R.id.txtCity);
+                        String str = textView1.getText().toString();
+                        array.remove(str);
+                    }
+                }
+            });
+
+            textView.setText(cities[i]);
+            scrollView.addView(view);
+            txtClick.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    for(int k = 0; k < array.size(); k++){
+                        Toast.makeText(getApplicationContext(), array.get(k) + " ", Toast.LENGTH_LONG).show();
+                    }
+                }
+            });
+        }
     }
 
     private void addBottomDots(int currentPage) {
