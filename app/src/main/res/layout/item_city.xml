@@ -3,6 +3,7 @@
     android:orientation="vertical" android:layout_width="wrap_content"
     android:gravity="center_horizontal"
     android:layout_marginLeft="10dp"
+    android:padding="5dp"
     android:id="@+id/llCity"
     android:layout_height="match_parent">
 

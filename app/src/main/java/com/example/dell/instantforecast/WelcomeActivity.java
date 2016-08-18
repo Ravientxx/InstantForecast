@@ -58,7 +58,7 @@ public class WelcomeActivity extends AppCompatActivity {
         dotsLayout = (LinearLayout) findViewById(R.id.layoutDots);
         btnSkip = (Button) findViewById(R.id.btn_skip);
         btnNext = (Button) findViewById(R.id.btn_next);
-
+        txtClick = (TextView)findViewById(R.id.txtContinue);
 
         // layouts of all welcome sliders
         // add few more layouts if you want
@@ -94,8 +94,6 @@ public class WelcomeActivity extends AppCompatActivity {
                 if (current < layouts.length) {
                     // move to next screen
                     viewPager.setCurrentItem(current);
-
-
                     addCity();
 
                 } else {
@@ -109,11 +107,11 @@ public class WelcomeActivity extends AppCompatActivity {
     String[] cities = { "New York", "Ha Noi", "Thanh Hoa", "London"};
     ArrayList<String> array = new ArrayList<>();
     int i = 0;
-    boolean isClicked = true;
-    private synchronized void addCity(){
+
+    private void addCity(){
         LayoutInflater inflater = (LayoutInflater)getSystemService(LAYOUT_INFLATER_SERVICE);
         scrollView = (LinearLayout) findViewById(R.id.liner);
-        txtClick = (TextView)findViewById(R.id.txtContinue);
+
         for(i = 0; i < 4; i++){
             View view = inflater.inflate(R.layout.item_city, null, false);
             final ImageView imageView = (ImageView)view.findViewById(R.id.click);
@@ -122,33 +120,28 @@ public class WelcomeActivity extends AppCompatActivity {
             linearLayout.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if(isClicked) {
-                        isClicked = false;
+                    ImageView ve = (ImageView)v.findViewById(R.id.click);
+                    if(ve.getVisibility()==View.GONE) {
+                        
                         imageView.setVisibility(View.VISIBLE);
                         TextView textView1 = (TextView) v.findViewById(R.id.txtCity);
                         String str = textView1.getText().toString();
                         array.add(str);
+                        Toast.makeText(getApplicationContext(), "jjj", Toast.LENGTH_LONG).show();
                     }
                     else {
                         imageView.setVisibility(View.GONE);
-                        isClicked = true;
                         TextView textView1 = (TextView) v.findViewById(R.id.txtCity);
                         String str = textView1.getText().toString();
                         array.remove(str);
+                        Toast.makeText(getApplicationContext(), str, Toast.LENGTH_LONG).show();
                     }
                 }
             });
 
             textView.setText(cities[i]);
             scrollView.addView(view);
-            txtClick.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    for(int k = 0; k < array.size(); k++){
-                        Toast.makeText(getApplicationContext(), array.get(k) + " ", Toast.LENGTH_LONG).show();
-                    }
-                }
-            });
+
         }
     }
 
