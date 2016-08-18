@@ -1,13 +1,11 @@
 package com.example.dell.instantforecast;
 
-import android.graphics.Bitmap;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
-import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -22,7 +20,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 /**
  * Created by TONITUAN on 8/17/2016.
  */
-public class CoordinateActivity extends AppCompatActivity{
+public class AddLocationMapActivity extends AppCompatActivity{
 
     GoogleMap map;
 
@@ -42,6 +40,7 @@ public class CoordinateActivity extends AppCompatActivity{
         });
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
+        setTitle("Choose location");
     }
 
     public void addEvent(){
@@ -50,7 +49,7 @@ public class CoordinateActivity extends AppCompatActivity{
             @Override
             public void onMapClick(LatLng latLng) {
                 moveToNewPlace(latLng);
-                WeatherInfoFragment.loadWeatherInfo("get_current_location", String.valueOf(latLng.latitude), String.valueOf(latLng.longitude));
+                WeatherInfoFragment.loadWeatherInfo("add_location_map", String.valueOf(latLng.latitude), String.valueOf(latLng.longitude));
                 finish();
             }
         });
@@ -58,16 +57,13 @@ public class CoordinateActivity extends AppCompatActivity{
 
     public void moveToNewPlace(LatLng latLng){
         if(latLng != null){
-            map.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latLng.latitude, latLng.longitude), 13));
             CameraPosition cameraPosition = new CameraPosition.Builder().target(new LatLng(latLng.latitude, latLng.longitude))
-                    .zoom(15)
-                    .tilt(40)
+                    .zoom(10)
                     .build();
-
             map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
             MarkerOptions options = new MarkerOptions();
             options.position(new LatLng(latLng.latitude, latLng.longitude));
-            options.title("Your location").snippet("Click to choose new location");
+            options.title("Your location");
             options.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
             Marker marker = map.addMarker(options);
             marker.showInfoWindow();

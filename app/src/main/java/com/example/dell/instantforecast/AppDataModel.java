@@ -6,6 +6,6 @@ import java.util.ArrayList;
  * Created by Dell on 7/25/2016.
  */
 public class AppDataModel {
-    ArrayList<CityNowWeatherInfo> city_list;
-    CityNowWeatherInfo current_city;
+    ArrayList<LocationWeatherInfo> city_list;
+    LocationWeatherInfo current_city;
 }

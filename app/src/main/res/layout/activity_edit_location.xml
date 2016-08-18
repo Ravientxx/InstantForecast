@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/add_city_background"
+    android:background="@color/main_background"
     android:orientation="vertical">
 
     <LinearLayout
@@ -23,6 +23,30 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Add Location"
+            android:textColor="#fff"
+            android:layout_gravity="center_vertical"
+            android:textSize="@dimen/main_text_size"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/linear_layout_add_location_map"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:clickable="true"
+        android:orientation="horizontal"
+        android:layout_margin="20dp">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_action_location"
+            android:layout_marginRight="20dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Add Location via Map"
             android:textColor="#fff"
             android:layout_gravity="center_vertical"
             android:textSize="@dimen/main_text_size"/>

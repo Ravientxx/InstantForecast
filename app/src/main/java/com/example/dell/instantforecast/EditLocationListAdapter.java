@@ -1,9 +1,6 @@
 package com.example.dell.instantforecast;
 
 import android.content.Context;
-import android.graphics.Typeface;
-import android.support.v4.view.GravityCompat;
-import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,11 +15,11 @@ import java.util.ArrayList;
  */
 public class EditLocationListAdapter extends BaseAdapter {
     public Context contextListView;
-    ArrayList<CityNowWeatherInfo> listModels;
+    ArrayList<LocationWeatherInfo> listModels;
 
-    EditLocationListAdapter(Context context,ArrayList<CityNowWeatherInfo> city_list){
+    EditLocationListAdapter(Context context,ArrayList<LocationWeatherInfo> city_list){
         contextListView = context;
-        //listModels = new ArrayList<CityNowWeatherInfo>();
+        //listModels = new ArrayList<LocationWeatherInfo>();
         //listModels.addAll(city_list);
         listModels = city_list;
     }
@@ -43,7 +40,7 @@ public class EditLocationListAdapter extends BaseAdapter {
 
     @Override
     public View getView(final int position, View convertView, ViewGroup parent) {
-        final CityNowWeatherInfo current_city = listModels.get(position);
+        final LocationWeatherInfo current_city = listModels.get(position);
 
         if (convertView == null) {
             LayoutInflater inflater = (LayoutInflater) contextListView.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -52,7 +49,7 @@ public class EditLocationListAdapter extends BaseAdapter {
         ImageView reorderIcon = (ImageView) convertView.findViewById(R.id.reorder_icon);
         ImageView deleteIcon = (ImageView) convertView.findViewById(R.id.delete_icon);
         TextView cityName = (TextView) convertView.findViewById(R.id.city_name);
-        cityName.setText(current_city.name);
+        cityName.setText(current_city.name + ", " + current_city.country);
 
         deleteIcon.setOnClickListener(new View.OnClickListener() {
             @Override

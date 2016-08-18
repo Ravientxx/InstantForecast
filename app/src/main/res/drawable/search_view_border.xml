@@ -4,7 +4,7 @@
 
     <!-- view background color -->
     <solid
-        android:color="@color/add_city_background" >
+        android:color="@color/main_background" >
     </solid>
 
     <!-- view border color and width -->

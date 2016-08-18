@@ -3,7 +3,7 @@ package com.example.dell.instantforecast;
 /**
  * Created by Dell on 7/16/2016.
  */
-public class CityNowWeatherInfo {
+public class LocationWeatherInfo {
     String id;
     String country;
     String lat;
@@ -11,13 +11,15 @@ public class CityNowWeatherInfo {
     String weatherIconText;
     String name;
     String temperature;
+    String description;
 
-    CityNowWeatherInfo(String id ,String cityName,String country, String weatherIconText,String temperature,String lat, String lon){
+    LocationWeatherInfo(String id , String cityName, String country, String weatherIconText, String temperature,String description, String lat, String lon){
         this.id = id;
         this.country = country;
         this.name = cityName;
         this.temperature = temperature;
         this.weatherIconText = weatherIconText;
+        this.description = description;
         this.lat = lat;
         this.lon = lon;
     }

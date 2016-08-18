@@ -37,7 +37,7 @@
 
     <color name="switch_button_off">#898888</color>
     <color name="switch_button_on">#0263f4</color>
-    <color name ="add_city_background">#282828</color>
+    <color name ="main_background">#282828</color>
 
     <color name="list_item_title">#fff</color>
 
