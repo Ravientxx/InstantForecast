@@ -3,29 +3,91 @@ package com.example.dell.instantforecast;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Point;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.os.Build;
 import android.renderscript.Allocation;
 import android.renderscript.Element;
 import android.renderscript.RenderScript;
 import android.renderscript.ScriptIntrinsicBlur;
-import android.view.Display;
-import android.view.WindowManager;
 
-import java.lang.reflect.InvocationTargetException;
+import com.google.gson.Gson;
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 
 /**
  * Created by Dell on 8/17/2016.
  */
 public class GeneralUtils {
 
-    static public boolean isOnline() {
+    static String APP_SETTING_FILENAME = "AppSettingData";
+    public static LocationWeatherInfo getLocationwithName(String name){
+        LocationWeatherInfo locationWeatherInfo = null;
+        for(int i = 0 ; i < MainActivity.appDataModel.city_list.size() ; i++){
+            if(name.equals(MainActivity.appDataModel.city_list.get(i).name)){
+                locationWeatherInfo = MainActivity.appDataModel.city_list.get(i);
+                break;
+            }
+        }
+        return locationWeatherInfo;
+    }
+
+    public static AppSettingModel loadAppSetting(Context context){
+        String string1 = "";
+        AppSettingModel appSettingModel = null;
+        try {
+            FileInputStream inputStream = context.openFileInput(APP_SETTING_FILENAME);
+            InputStreamReader fin = new InputStreamReader(inputStream, "UTF-8");
+            int i = 0;
+            while ((i = fin.read()) != -1) {
+                string1 += (char) i;
+            }
+            fin.close();
+            appSettingModel = new Gson().fromJson(string1, AppSettingModel.class);
+            System.out.println(string1);
+        } catch (FileNotFoundException e) {
+            appSettingModel = new AppSettingModel();
+            appSettingModel.isDailyNotificationActivated = false;
+            appSettingModel.isOngoingNotificationActivated = false;
+            appSettingModel.Unit = "C";
+        } catch (Exception e) {
+            e.printStackTrace();
+        }finally {
+            return appSettingModel;
+        }
+    }
+
+    public static void saveAppSetting(Context context,AppSettingModel appSettingModel){
+        String string = new Gson().toJson(appSettingModel, AppSettingModel.class);
+        try {
+            FileOutputStream out = context.openFileOutput(APP_SETTING_FILENAME, Context.MODE_PRIVATE);
+            OutputStreamWriter fos = new OutputStreamWriter(out, "UTF-8");
+            fos.write(string);
+            fos.close();
+            printDebug("Saving App Setting");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    static public double Celsius2Fahrenheit (double C){
+        double F = C * 1.8 + 32;
+        return F;
+    }
+
+    static public double Fahrenheit2Celsius (double F){
+        double C = (F - 32) / 1.8;
+        return C;
+    }
+
+    static public boolean isOnline(Context context) {
         ConnectivityManager cm =
-                (ConnectivityManager) MainActivity.mainActivity.getSystemService(Context.CONNECTIVITY_SERVICE);
+                (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo netInfo = cm.getActiveNetworkInfo();
         return netInfo != null && netInfo.isConnected();
     }
@@ -87,46 +149,11 @@ public class GeneralUtils {
         return outputBitmap;
     }
 
-    public static Point getNavigationBarSize(Context context) {
-        Point appUsableSize = getAppUsableScreenSize(context);
-        Point realScreenSize = getRealScreenSize(context);
-
-        // navigation bar on the right
-        if (appUsableSize.x < realScreenSize.x) {
-            return new Point(realScreenSize.x - appUsableSize.x, appUsableSize.y);
-        }
-
-        // navigation bar at the bottom
-        if (appUsableSize.y < realScreenSize.y) {
-            return new Point(appUsableSize.x, realScreenSize.y - appUsableSize.y);
-        }
-
-        // navigation bar is not present
-        return new Point();
-    }
-
-    public static Point getAppUsableScreenSize(Context context) {
-        WindowManager windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
-        Display display = windowManager.getDefaultDisplay();
-        Point size = new Point();
-        display.getSize(size);
-        return size;
-    }
-
-    public static Point getRealScreenSize(Context context) {
-        WindowManager windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
-        Display display = windowManager.getDefaultDisplay();
-        Point size = new Point();
-
-        if (Build.VERSION.SDK_INT >= 17) {
-            display.getRealSize(size);
-        } else if (Build.VERSION.SDK_INT >= 14) {
-            try {
-                size.x = (Integer) Display.class.getMethod("getRawWidth").invoke(display);
-                size.y = (Integer) Display.class.getMethod("getRawHeight").invoke(display);
-            } catch (IllegalAccessException e) {} catch (InvocationTargetException e) {} catch (NoSuchMethodException e) {}
-        }
-
-        return size;
+    static public void printDebug(String str){
+        System.out.println("");
+        System.out.println("");
+        System.out.println(str);
+        System.out.println("");
+        System.out.println("");
     }
 }

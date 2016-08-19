@@ -5,6 +5,8 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -27,7 +29,12 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
+
 import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * Created by Dell on 8/13/2016.
@@ -45,6 +52,7 @@ public class WeatherInfoFragment extends Fragment {
     static RelativeLayout current_condition_layout;
     static WeatherInfoFragment frag;
     SupportMapFragment mSupportMapFragment;
+    static Timer myTimer;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -57,17 +65,17 @@ public class WeatherInfoFragment extends Fragment {
             mSupportMapFragment = SupportMapFragment.newInstance();
             fragmentTransaction.replace(R.id.map_view, mSupportMapFragment).commit();
         }
-        if (mSupportMapFragment != null)
-        {
+        if (mSupportMapFragment != null) {
             mSupportMapFragment.getMapAsync(new OnMapReadyCallback() {
                 @Override
                 public void onMapReady(GoogleMap googleMap) {
-                  mGoogleMap = googleMap;
+                    mGoogleMap = googleMap;
                 }
             });
         }
         return v;
     }
+
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -118,83 +126,83 @@ public class WeatherInfoFragment extends Fragment {
         });
     }
 
-    static public void loadWeatherInfo(final String locationId, final double Lat, final double Lon,final boolean displayWeather) {
-        if (GeneralUtils.isOnline()) {
-            OpenWeatherMapApiManager.GetWeatherInfoTask getCurrentWeatherTask = new OpenWeatherMapApiManager.GetWeatherInfoTask(new OpenWeatherMapApiManager.AsyncResponse() {
-                public void processFinish(final LocationWeatherInfo current_locationWeatherInfo) {
-                    GoogleTimezoneAPI.getDateTimeByLocationTask getDateTimeTask = new GoogleTimezoneAPI.getDateTimeByLocationTask(new GoogleTimezoneAPI.AsyncResponse() {
-                        @Override
-                        public void processFinish(String date) {
-                            MainActivity.city_time_textview.setText(date);
-
-                            current_locationWeatherInfo.updateTime = date;
-                            current_locationWeatherInfo.id = locationId;
-                            current_locationWeatherInfo.lat = Lat;
-                            current_locationWeatherInfo.lon = Lon;
-                            MainActivity.appDataModel.current_city = current_locationWeatherInfo;
-
-                            CameraPosition cameraPosition = new CameraPosition.Builder().target(
-                                    new LatLng(MainActivity.appDataModel.current_city.lat,MainActivity.appDataModel.current_city.lon))
-                                    .zoom(8)
-                                    .build();
-
-                            mGoogleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
-                            mGoogleMap.getUiSettings().setAllGesturesEnabled(false);
-                            mGoogleMap.getUiSettings().setZoomControlsEnabled(true);
-                            mGoogleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
-                                @Override
-                                public void onMapClick(LatLng latLng) {
-                                    frag.startActivity(new Intent(frag.getContext(),MapLayerActivity.class));
-                                }
-                            });
-                            if(!locationId.equals("get_current_location")){
-                                int locationIndex = -1;
-                                for (int i = 0; i < MainActivity.appDataModel.city_list.size(); i++) {
-                                    if (current_locationWeatherInfo.id.equals(MainActivity.appDataModel.city_list.get(i).id)) {
-                                        locationIndex = i;
-                                        break;
+    static public void loadWeather(final LocationWeatherInfo location,final boolean displayWeatherInfo) {
+        long now = System.currentTimeMillis();
+        if ((now - location.updateTime) > (1000 * 60 * 10)) {
+            GeneralUtils.printDebug("Update weather info");
+            if (GeneralUtils.isOnline(MainActivity.mainActivity)) {
+                OpenWeatherMapApiManager.GetCurrentWeatherConditionTask getCurrentWeatherTask = new OpenWeatherMapApiManager.GetCurrentWeatherConditionTask(new OpenWeatherMapApiManager.AsyncResponse() {
+                    public void processFinish(final LocationWeatherInfo current_locationWeatherInfo) {
+                        GoogleTimezoneAPI.getDateTimeByLocationTask getDateTimeTask = new GoogleTimezoneAPI.getDateTimeByLocationTask(new GoogleTimezoneAPI.AsyncResponse() {
+                            @Override
+                            public void processFinish(String date) {
+                                MainActivity.city_time_textview.setText(date);
+                                current_locationWeatherInfo.timeZone = GoogleTimezoneAPI.current_timezone;
+                                current_locationWeatherInfo.updateTime = System.currentTimeMillis();
+                                current_locationWeatherInfo.id = location.id;
+                                current_locationWeatherInfo.lat = location.lat;
+                                current_locationWeatherInfo.lon = location.lon;
+                                if (location.id.equals("get_current_location")) {
+                                    MainActivity.appDataModel.current_location = current_locationWeatherInfo;
+                                    MainActivity.appDataModel.selected_location_index = -1;
+                                } else {
+                                    int locationIndex = -1;
+                                    for (int i = 0; i < MainActivity.appDataModel.city_list.size(); i++) {
+                                        if (current_locationWeatherInfo.id.equals(MainActivity.appDataModel.city_list.get(i).id)) {
+                                            locationIndex = i;
+                                            break;
+                                        }
                                     }
+                                    if (locationIndex == -1 || location.id.equals("add_location_map")) {
+                                        MainActivity.appDataModel.selected_location_index = MainActivity.appDataModel.city_list.size();
+                                        MainActivity.appDataModel.city_list.add(current_locationWeatherInfo);
+                                        if (EditLocationActivity.editLocationListAdapter != null)
+                                            EditLocationActivity.editLocationListAdapter.notifyDataSetChanged();
+                                        current_locationWeatherInfo.id = "added_location_map";
+                                    } else {// Update City Info
+                                        MainActivity.appDataModel.city_list.remove(locationIndex);
+                                        MainActivity.appDataModel.city_list.add(locationIndex, current_locationWeatherInfo);
+                                    }
+                                    MainActivity.navigationMenuListAdapter = new NavigationMenuListAdapter(MainActivity.mainActivity, MainActivity.appDataModel.city_list);
+                                    MainActivity.navigationMenuList.setAdapter(MainActivity.navigationMenuListAdapter);
                                 }
-                                if (locationIndex == -1 || locationId.equals("add_location_map")) {
-                                    MainActivity.appDataModel.city_list.add(current_locationWeatherInfo);
-                                    if(EditLocationActivity.editLocationListAdapter != null)
-                                        EditLocationActivity.editLocationListAdapter.notifyDataSetChanged();
-                                    current_locationWeatherInfo.id = "added_location_map";
-                                } else {// Update City Info
-                                    MainActivity.appDataModel.city_list.remove(locationIndex);
-                                    MainActivity.appDataModel.city_list.add(locationIndex, current_locationWeatherInfo);
-                                }
-                                MainActivity.navigationMenuListAdapter = new NavigationMenuListAdapter(MainActivity.mainActivity, MainActivity.appDataModel.city_list);
-                                MainActivity.navigationMenuList.setAdapter(MainActivity.navigationMenuListAdapter);
-                            }
-                            current_condition_layout.setMinimumHeight(screenHeight - MainActivity.toolbar.getHeight());
+                                current_condition_layout.setMinimumHeight(screenHeight - MainActivity.toolbar.getHeight());
 
-                            if(displayWeather){
-                                displayWeatherInfo(current_locationWeatherInfo);
-
-                                BACKGROUND_IMAGE_ID = current_locationWeatherInfo.conditionId;
-                                blurred_background_image.clear();
-                                Bitmap bitmap = BitmapFactory.decodeResource(MainActivity.mainActivity.getResources(), BACKGROUND_IMAGE_ID);
-                                MainActivity.mainActivity.background_image_view.setImageBitmap(bitmap);
-                                blurred_background_image.add(GeneralUtils.blur(bitmap, 5f));
-                                bitmap = BitmapFactory.decodeResource(MainActivity.mainActivity.getResources(), BACKGROUND_IMAGE_ID);
-                                blurred_background_image.add(GeneralUtils.blur(bitmap, 15f));
-                                bitmap = BitmapFactory.decodeResource(MainActivity.mainActivity.getResources(), BACKGROUND_IMAGE_ID);
-                                blurred_background_image.add(GeneralUtils.blur(bitmap, 25f));
+                                if(displayWeatherInfo)
+                                    displayWeatherInfo(current_locationWeatherInfo);
                             }
-                        }
-                    });
-                    getDateTimeTask.execute(String.valueOf(Lat), String.valueOf(Lon));
-                }
-            });
-            getCurrentWeatherTask.execute(String.valueOf(Lat), String.valueOf(Lon));
+                        });
+                        getDateTimeTask.execute(String.valueOf(location.lat), String.valueOf(location.lon));
+                    }
+                });
+                getCurrentWeatherTask.execute(String.valueOf(location.lat), String.valueOf(location.lon));
+            } else {
+                Toast networkError = Toast.makeText(MainActivity.mainActivity, "Can't connect to internet!!", Toast.LENGTH_LONG);
+                networkError.show();
+            }
         } else {
-            Toast networkError = Toast.makeText(MainActivity.mainActivity, "Can't connect to internet!!", Toast.LENGTH_LONG);
-            networkError.show();
+            GeneralUtils.printDebug("Load saved weather info");
+            displayWeatherInfo(location);
         }
+        final Handler updateTimeHandler = new Handler() {
+            public void handleMessage(Message msg) {
+                DateTimeZone zone = DateTimeZone.forID(location.timeZone);
+                DateTime dt = new DateTime(zone);
+                MainActivity.city_time_textview.setText(dt.toString("EEE, d MMM yyyy, HH:mm a"));
+            }
+        };
+        if (myTimer != null) {
+            myTimer.cancel();
+        }
+        myTimer = new Timer();
+        myTimer.scheduleAtFixedRate(new TimerTask() {
+            public void run() {
+                updateTimeHandler.obtainMessage(1).sendToTarget();
+            }
+        }, 0, 60000);
     }
 
-    static public void displayWeatherInfo(LocationWeatherInfo location){
+    static public void displayWeatherInfo(LocationWeatherInfo location) {
         //Current condition
         MainActivity.city_name_textview.setText(location.name + "," + location.country);
         detailsField.setText(location.description);
@@ -212,5 +220,31 @@ public class WeatherInfoFragment extends Fragment {
         //humidity_field.setText("Humidity: "+weather_humidity);
         //pressure_field.setText("Pressure: "+weather_pressure);
 
+
+
+        BACKGROUND_IMAGE_ID = location.conditionId;
+        blurred_background_image.clear();
+        Bitmap bitmap = BitmapFactory.decodeResource(MainActivity.mainActivity.getResources(), BACKGROUND_IMAGE_ID);
+        MainActivity.mainActivity.background_image_view.setImageBitmap(bitmap);
+        blurred_background_image.add(GeneralUtils.blur(bitmap, 5f));
+        bitmap = BitmapFactory.decodeResource(MainActivity.mainActivity.getResources(), BACKGROUND_IMAGE_ID);
+        blurred_background_image.add(GeneralUtils.blur(bitmap, 15f));
+        bitmap = BitmapFactory.decodeResource(MainActivity.mainActivity.getResources(), BACKGROUND_IMAGE_ID);
+        blurred_background_image.add(GeneralUtils.blur(bitmap, 25f));
+
+        CameraPosition cameraPosition = new CameraPosition.Builder().target(
+                new LatLng(location.lat, location.lon))
+                .zoom(8)
+                .build();
+
+        mGoogleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+        mGoogleMap.getUiSettings().setAllGesturesEnabled(false);
+        mGoogleMap.getUiSettings().setZoomControlsEnabled(true);
+        mGoogleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+            @Override
+            public void onMapClick(LatLng latLng) {
+                frag.startActivity(new Intent(frag.getContext(), MapLayerActivity.class));
+            }
+        });
     }
 }

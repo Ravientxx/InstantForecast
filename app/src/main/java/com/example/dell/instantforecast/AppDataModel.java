@@ -7,5 +7,6 @@ import java.util.ArrayList;
  */
 public class AppDataModel {
     ArrayList<LocationWeatherInfo> city_list;
-    LocationWeatherInfo current_city;
+    LocationWeatherInfo current_location;
+    int selected_location_index;
 }

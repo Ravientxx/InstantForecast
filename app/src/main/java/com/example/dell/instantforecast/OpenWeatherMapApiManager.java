@@ -56,9 +56,9 @@ public class OpenWeatherMapApiManager {
         return icon;
     }
 
-    public static int setConditionId(String Id){
+    public static int setConditionId(String Id) {
         int conditionId = 0;
-        switch (Id){
+        switch (Id) {
             case "01d":
                 conditionId = R.drawable.clear_sky_day;
                 break;
@@ -105,30 +105,43 @@ public class OpenWeatherMapApiManager {
 
         return conditionId;
     }
+
     public interface AsyncResponse {
         void processFinish(LocationWeatherInfo locationWeatherInfo);
     }
 
 
-    public static class GetWeatherInfoTask extends AsyncTask<String, Void, JSONObject> {
+    public static class GetCurrentWeatherConditionTask extends AsyncTask<String, Void, JSONObject> {
+        public AsyncResponse delegate = null;
 
-        public AsyncResponse delegate = null;//Call back interface
-
-        public GetWeatherInfoTask(AsyncResponse asyncResponse) {
+        public GetCurrentWeatherConditionTask(AsyncResponse asyncResponse) {
             delegate = asyncResponse;//Assigning call back interfacethrough constructor
         }
 
         @Override
         protected JSONObject doInBackground(String... params) {
-
             JSONObject jsonWeather = null;
             try {
-                jsonWeather = getWeatherJSON(params[0], params[1]);
+                URL url = new URL(String.format(OPEN_WEATHER_MAP_URL, params[0], params[1]));
+                HttpURLConnection connection =
+                        (HttpURLConnection) url.openConnection();
+                connection.addRequestProperty("x-api-key", OPEN_WEATHER_MAP_API);
+                BufferedReader reader = new BufferedReader(
+                        new InputStreamReader(connection.getInputStream()));
+                StringBuffer json = new StringBuffer(1024);
+                String tmp = "";
+                while ((tmp = reader.readLine()) != null)
+                    json.append(tmp).append("\n");
+                reader.close();
+                jsonWeather = new JSONObject(json.toString());
+
+                // successful
+                if (jsonWeather.getInt("cod") != 200) {
+                    return null;
+                }
             } catch (Exception e) {
                 Log.d("Error", "Cannot process JSON results", e);
             }
-
-
             return jsonWeather;
         }
 
@@ -139,7 +152,6 @@ public class OpenWeatherMapApiManager {
                     JSONObject details = json.getJSONArray("weather").getJSONObject(0);
                     JSONObject main = json.getJSONObject("main");
                     DateFormat df = DateFormat.getDateTimeInstance();
-
                     String country = json.getJSONObject("sys").getString("country");
                     String city = json.getString("name");
                     String description = details.getString("description").toUpperCase(Locale.US);
@@ -151,7 +163,6 @@ public class OpenWeatherMapApiManager {
                             json.getJSONObject("sys").getLong("sunrise") * 1000,
                             json.getJSONObject("sys").getLong("sunset") * 1000);
                     int conditionId = setConditionId(details.getString("icon"));
-
                     LocationWeatherInfo locationWeatherInfo = new LocationWeatherInfo();
                     locationWeatherInfo.country = country;
                     locationWeatherInfo.name = city;
@@ -159,14 +170,11 @@ public class OpenWeatherMapApiManager {
                     locationWeatherInfo.temperature = temperature;
                     locationWeatherInfo.humidity = humidity;
                     locationWeatherInfo.pressure = pressure;
-                    locationWeatherInfo.updateTime = updatedOn;
                     locationWeatherInfo.weatherIconText = iconText;
                     locationWeatherInfo.conditionId = conditionId;
                     locationWeatherInfo.sunRise = "" + json.getJSONObject("sys").getLong("sunrise") * 1000;
                     locationWeatherInfo.sunSet = "" + json.getJSONObject("sys").getLong("sunset") * 1000;
-
                     delegate.processFinish(locationWeatherInfo);
-
                 }
             } catch (JSONException e) {
                 //Log.e(LOG_TAG, "Cannot process JSON results", e);

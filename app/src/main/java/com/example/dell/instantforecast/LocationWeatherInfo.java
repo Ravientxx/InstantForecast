@@ -14,21 +14,18 @@ public class LocationWeatherInfo {
     String description;
     String humidity;
     String pressure;
-    String updateTime;
+    long updateTime;
     String sunRise;
     String sunSet;
     int conditionId;
+    String timeZone;
 
     LocationWeatherInfo(){
 
     }
-    LocationWeatherInfo(String id , String cityName, String country, String weatherIconText, String temperature,String description, double lat, double lon){
+    LocationWeatherInfo(String id , long updateTime, double lat, double lon){
         this.id = id;
-        this.country = country;
-        this.name = cityName;
-        this.temperature = temperature;
-        this.weatherIconText = weatherIconText;
-        this.description = description;
+        this.updateTime = updateTime;
         this.lat = lat;
         this.lon = lon;
     }

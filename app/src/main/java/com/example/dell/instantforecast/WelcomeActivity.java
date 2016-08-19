@@ -164,7 +164,7 @@ public class WelcomeActivity extends AppCompatActivity {
     private void launchHomeScreen() {
         prefManager.setFirstTimeLaunch(false);
         Intent intent = new Intent(WelcomeActivity.this, SplashScreen.class);
-        intent.putExtra("selectFromWelcome", false);
+        intent.putExtra("loadFromWelcome", false);
         startActivity(intent);
         finish();
     }
