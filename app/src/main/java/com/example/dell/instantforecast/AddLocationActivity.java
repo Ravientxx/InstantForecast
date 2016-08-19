@@ -28,11 +28,11 @@ public class AddLocationActivity extends AppCompatActivity implements AdapterVie
     public class LocationInfo {
         String id;
         String name;
-        String lon;
-        String lat;
+        double lon;
+        double lat;
         String country;
 
-        public LocationInfo(String id, String name, String lon, String lat, String country) {
+        public LocationInfo(String id, String name, double lon, double lat, String country) {
             this.id = id;
             this.name = name;
             this.lon = lon;
@@ -92,7 +92,7 @@ public class AddLocationActivity extends AppCompatActivity implements AdapterVie
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         LocationInfo locationInfo = locationInfos.get(position);
-        WeatherInfoFragment.loadWeatherInfo(locationInfo.id, locationInfo.lat, locationInfo.lon);
+        WeatherInfoFragment.loadWeatherInfo(locationInfo.id, locationInfo.lat, locationInfo.lon,true);
         finish();
     }
 
@@ -115,8 +115,8 @@ public class AddLocationActivity extends AppCompatActivity implements AdapterVie
                         locationInfos.add(new LocationInfo(
                                         String.valueOf(data.child("_id").getValue(int.class)),
                                         GeneralUtils.toTitleCase(data.child("name").getValue(String.class)),
-                                        String.valueOf(data.child("lon").getValue(Double.class)),
-                                        String.valueOf(data.child("lat").getValue(Double.class)),
+                                        data.child("lon").getValue(Double.class),
+                                        data.child("lat").getValue(Double.class),
                                         data.child("country").getValue(String.class).toUpperCase()
                                 )
                         );

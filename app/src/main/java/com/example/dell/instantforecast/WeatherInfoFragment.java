@@ -1,19 +1,19 @@
 package com.example.dell.instantforecast;
 
-import android.app.Fragment;
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.text.Html;
 import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.ScrollView;
@@ -22,8 +22,8 @@ import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 
@@ -37,37 +37,46 @@ public class WeatherInfoFragment extends Fragment {
     static int BACKGROUND_IMAGE_ID;
     static TextView detailsField, currentTemperatureField, max_temperature, min_temperature, weatherIcon;
     static ImageView max_img, min_img;
-    static Typeface weatherFont;
     static ScrollView mainScrollView;
     static int screenHeight;
     static ArrayList<Bitmap> blurred_background_image;
     static Bitmap background_image;
-    RelativeLayout mapl, clickMap;
-    static GoogleMap map;
-    MapView mapView;
-    Button clickl;
+    static GoogleMap mGoogleMap;
     static RelativeLayout current_condition_layout;
+    static WeatherInfoFragment frag;
+    SupportMapFragment mSupportMapFragment;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.weather_info_fragment, container, false);
+        View v = inflater.inflate(R.layout.weather_info_fragment, container, false);
+        mSupportMapFragment = (SupportMapFragment) getFragmentManager().findFragmentById(R.id.map_view);
+        if (mSupportMapFragment == null) {
+            FragmentManager fragmentManager = getFragmentManager();
+            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+            mSupportMapFragment = SupportMapFragment.newInstance();
+            fragmentTransaction.replace(R.id.map_view, mSupportMapFragment).commit();
+        }
+        if (mSupportMapFragment != null)
+        {
+            mSupportMapFragment.getMapAsync(new OnMapReadyCallback() {
+                @Override
+                public void onMapReady(GoogleMap googleMap) {
+                  mGoogleMap = googleMap;
+                }
+            });
+        }
+        return v;
     }
-
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-    }
-
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        weatherFont = Typeface.createFromAsset(MainActivity.mainActivity.getAssets(), "fonts/weathericons-regular-webfont.ttf");
+        frag = this;
+
         detailsField = (TextView) view.findViewById(R.id.details_field);
         currentTemperatureField = (TextView) view.findViewById(R.id.current_temperature);
         weatherIcon = (TextView) view.findViewById(R.id.weather_icon);
-        weatherIcon.setTypeface(weatherFont);
+        weatherIcon.setTypeface(Typeface.createFromAsset(MainActivity.mainActivity.getAssets(), "fonts/weathericons-regular-webfont.ttf"));
 
         max_img = (ImageView) view.findViewById(R.id.max_icon);
         max_temperature = (TextView) view.findViewById(R.id.max_temperature);
@@ -77,23 +86,6 @@ public class WeatherInfoFragment extends Fragment {
         DisplayMetrics displaymetrics = new DisplayMetrics();
         MainActivity.mainActivity.getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
         screenHeight = displaymetrics.heightPixels;
-        clickl = (Button)view.findViewById(R.id.button);
-        clickl.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(getActivity(), MapActivity.class);
-                startActivity(intent);
-            }
-        });
-        mapView = (MapView)view.findViewById(R.id.mapview);
-        mapView.onCreate(savedInstanceState);
-        mapView.getMapAsync(new OnMapReadyCallback() {
-            @Override
-            public void onMapReady(GoogleMap googleMap) {
-                map = googleMap;
-
-            }
-        });
 
         current_condition_layout = (RelativeLayout) view.findViewById(R.id.current_condition_screen);
         blurred_background_image = new ArrayList<>();
@@ -101,7 +93,6 @@ public class WeatherInfoFragment extends Fragment {
         current_condition_layout = (RelativeLayout) view.findViewById(R.id.current_condition_screen);
         mainScrollView = (ScrollView) view.findViewById(R.id.weather_info_scroll_view);
         mainScrollView.getViewTreeObserver().addOnScrollChangedListener(new ViewTreeObserver.OnScrollChangedListener() {
-
             @Override
             public void onScrollChanged() {
                 int scrollY = mainScrollView.getScrollY(); //for verticalScrollView
@@ -127,78 +118,76 @@ public class WeatherInfoFragment extends Fragment {
         });
     }
 
-    static public void loadWeatherInfo(final String locationId, final String Lat, final String Lon) {
+    static public void loadWeatherInfo(final String locationId, final double Lat, final double Lon,final boolean displayWeather) {
         if (GeneralUtils.isOnline()) {
-            OpenWeatherMapApiManager.placeIdTask getCurrentWeatherTask = new OpenWeatherMapApiManager.placeIdTask(new OpenWeatherMapApiManager.AsyncResponse() {
-                public void processFinish(String weather_country, String weather_city, String weather_description, String weather_temperature, String weather_humidity,
-                                          String weather_pressure, String weather_updatedOn, String weather_iconText, int conditionId, String sun_rise) {
-                    LocationWeatherInfo current_locationWeatherInfo = new LocationWeatherInfo(
-                            locationId,
-                            weather_city,
-                            weather_country,
-                            weather_iconText,
-                            weather_temperature,
-                            weather_description,
-                            Lat,
-                            Lon
-                    );
+            OpenWeatherMapApiManager.GetWeatherInfoTask getCurrentWeatherTask = new OpenWeatherMapApiManager.GetWeatherInfoTask(new OpenWeatherMapApiManager.AsyncResponse() {
+                public void processFinish(final LocationWeatherInfo current_locationWeatherInfo) {
+                    GoogleTimezoneAPI.getDateTimeByLocationTask getDateTimeTask = new GoogleTimezoneAPI.getDateTimeByLocationTask(new GoogleTimezoneAPI.AsyncResponse() {
+                        @Override
+                        public void processFinish(String date) {
+                            MainActivity.city_time_textview.setText(date);
 
-                    MainActivity.appDataModel.current_city = current_locationWeatherInfo;
+                            current_locationWeatherInfo.updateTime = date;
+                            current_locationWeatherInfo.id = locationId;
+                            current_locationWeatherInfo.lat = Lat;
+                            current_locationWeatherInfo.lon = Lon;
+                            MainActivity.appDataModel.current_city = current_locationWeatherInfo;
 
-                    //CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(new LatLng(Double.parseDouble(MainActivity.appDataModel.current_city.lat), Double.parseDouble(MainActivity.appDataModel.current_city.lon)), 13);
-                    CameraPosition cameraPosition = new CameraPosition.Builder().target(new LatLng(Double.parseDouble(MainActivity.appDataModel.current_city.lat),
-                            Double.parseDouble(MainActivity.appDataModel.current_city.lon)))
-                            .zoom(15)
-                            .tilt(40)
-                            .build();
+                            CameraPosition cameraPosition = new CameraPosition.Builder().target(
+                                    new LatLng(MainActivity.appDataModel.current_city.lat,MainActivity.appDataModel.current_city.lon))
+                                    .zoom(8)
+                                    .build();
 
-                    map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
-                    map.getUiSettings().setAllGesturesEnabled(true);
-                    map.getUiSettings().setZoomControlsEnabled(true);
-                    if(!locationId.equals("get_current_location")){
-                        int locationIndex = -1;
-                        for (int i = 0; i < MainActivity.appDataModel.city_list.size(); i++) {
-                            if (current_locationWeatherInfo.id.equals(MainActivity.appDataModel.city_list.get(i).id)) {
-                                locationIndex = i;
-                                break;
+                            mGoogleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+                            mGoogleMap.getUiSettings().setAllGesturesEnabled(false);
+                            mGoogleMap.getUiSettings().setZoomControlsEnabled(true);
+                            mGoogleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+                                @Override
+                                public void onMapClick(LatLng latLng) {
+                                    frag.startActivity(new Intent(frag.getContext(),MapLayerActivity.class));
+                                }
+                            });
+                            if(!locationId.equals("get_current_location")){
+                                int locationIndex = -1;
+                                for (int i = 0; i < MainActivity.appDataModel.city_list.size(); i++) {
+                                    if (current_locationWeatherInfo.id.equals(MainActivity.appDataModel.city_list.get(i).id)) {
+                                        locationIndex = i;
+                                        break;
+                                    }
+                                }
+                                if (locationIndex == -1 || locationId.equals("add_location_map")) {
+                                    MainActivity.appDataModel.city_list.add(current_locationWeatherInfo);
+                                    if(EditLocationActivity.editLocationListAdapter != null)
+                                        EditLocationActivity.editLocationListAdapter.notifyDataSetChanged();
+                                    current_locationWeatherInfo.id = "added_location_map";
+                                } else {// Update City Info
+                                    MainActivity.appDataModel.city_list.remove(locationIndex);
+                                    MainActivity.appDataModel.city_list.add(locationIndex, current_locationWeatherInfo);
+                                }
+                                MainActivity.navigationMenuListAdapter = new NavigationMenuListAdapter(MainActivity.mainActivity, MainActivity.appDataModel.city_list);
+                                MainActivity.navigationMenuList.setAdapter(MainActivity.navigationMenuListAdapter);
+                            }
+                            current_condition_layout.setMinimumHeight(screenHeight - MainActivity.toolbar.getHeight());
+
+                            if(displayWeather){
+                                displayWeatherInfo(current_locationWeatherInfo);
+
+                                BACKGROUND_IMAGE_ID = current_locationWeatherInfo.conditionId;
+                                blurred_background_image.clear();
+                                Bitmap bitmap = BitmapFactory.decodeResource(MainActivity.mainActivity.getResources(), BACKGROUND_IMAGE_ID);
+                                MainActivity.mainActivity.background_image_view.setImageBitmap(bitmap);
+                                blurred_background_image.add(GeneralUtils.blur(bitmap, 5f));
+                                bitmap = BitmapFactory.decodeResource(MainActivity.mainActivity.getResources(), BACKGROUND_IMAGE_ID);
+                                blurred_background_image.add(GeneralUtils.blur(bitmap, 15f));
+                                bitmap = BitmapFactory.decodeResource(MainActivity.mainActivity.getResources(), BACKGROUND_IMAGE_ID);
+                                blurred_background_image.add(GeneralUtils.blur(bitmap, 25f));
                             }
                         }
-                        if (locationIndex == -1 || locationId.equals("add_location_map")) {
-                            MainActivity.appDataModel.city_list.add(current_locationWeatherInfo);
-                            EditLocationActivity.editLocationListAdapter.notifyDataSetChanged();
-                            current_locationWeatherInfo.id = "added_location_map";
-                        } else {// Update City Info
-                            MainActivity.appDataModel.city_list.remove(locationIndex);
-                            MainActivity.appDataModel.city_list.add(locationIndex, current_locationWeatherInfo);
-                        }
-                        MainActivity.navigationMenuListAdapter.notifyDataSetChanged();
-                    }
-
-
-                    current_condition_layout.setMinimumHeight(screenHeight - MainActivity.toolbar.getHeight());
-
-                    displayWeatherInfo(current_locationWeatherInfo);
-
-                    BACKGROUND_IMAGE_ID = conditionId;
-                    blurred_background_image.clear();
-                    Bitmap bitmap = BitmapFactory.decodeResource(MainActivity.mainActivity.getResources(), BACKGROUND_IMAGE_ID);
-                    MainActivity.mainActivity.background_image_view.setImageBitmap(bitmap);
-                    blurred_background_image.add(GeneralUtils.blur(bitmap, 5f));
-                    bitmap = BitmapFactory.decodeResource(MainActivity.mainActivity.getResources(), BACKGROUND_IMAGE_ID);
-                    blurred_background_image.add(GeneralUtils.blur(bitmap, 15f));
-                    bitmap = BitmapFactory.decodeResource(MainActivity.mainActivity.getResources(), BACKGROUND_IMAGE_ID);
-                    blurred_background_image.add(GeneralUtils.blur(bitmap, 25f));
+                    });
+                    getDateTimeTask.execute(String.valueOf(Lat), String.valueOf(Lon));
                 }
             });
-            getCurrentWeatherTask.execute(Lat, Lon);
-
-            GoogleTimezoneAPI.getDateTimeByLocationTask getDateTimeTask = new GoogleTimezoneAPI.getDateTimeByLocationTask(new GoogleTimezoneAPI.AsyncResponse() {
-                @Override
-                public void processFinish(String date) {
-                    MainActivity.city_time_textview.setText(date);
-                }
-            });
-            getDateTimeTask.execute(Lat, Lon);
+            getCurrentWeatherTask.execute(String.valueOf(Lat), String.valueOf(Lon));
         } else {
             Toast networkError = Toast.makeText(MainActivity.mainActivity, "Can't connect to internet!!", Toast.LENGTH_LONG);
             networkError.show();

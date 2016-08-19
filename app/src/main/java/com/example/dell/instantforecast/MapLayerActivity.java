@@ -23,7 +23,7 @@ import java.net.URL;
 /**
  * Created by TONITUAN on 8/16/2016.
  */
-public class MapActivity extends AppCompatActivity{
+public class MapLayerActivity extends AppCompatActivity{
 
     private GoogleMap map;
     String tileType = "clouds";

@@ -56,7 +56,7 @@
         </activity>
         <activity android:name=".AddLocationActivity"></activity>
         <activity android:name="com.example.dell.instantforecast.AppSettingActivity"></activity>
-        <activity android:name="com.example.dell.instantforecast.MapActivity"></activity>
+        <activity android:name=".MapLayerActivity"></activity>
         <activity android:name=".AddLocationMapActivity"></activity>
         <activity android:name=".EditLocationActivity"></activity>
         <activity android:name=".DailyNotificationActivity"></activity>

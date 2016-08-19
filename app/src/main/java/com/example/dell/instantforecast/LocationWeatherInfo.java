@@ -6,20 +6,36 @@ package com.example.dell.instantforecast;
 public class LocationWeatherInfo {
     String id;
     String country;
-    String lat;
-    String lon;
+    double lat;
+    double lon;
     String weatherIconText;
     String name;
     String temperature;
     String description;
+    String humidity;
+    String pressure;
+    String updateTime;
+    String sunRise;
+    String sunSet;
+    int conditionId;
 
-    LocationWeatherInfo(String id , String cityName, String country, String weatherIconText, String temperature,String description, String lat, String lon){
+    LocationWeatherInfo(){
+
+    }
+    LocationWeatherInfo(String id , String cityName, String country, String weatherIconText, String temperature,String description, double lat, double lon){
         this.id = id;
         this.country = country;
         this.name = cityName;
         this.temperature = temperature;
         this.weatherIconText = weatherIconText;
         this.description = description;
+        this.lat = lat;
+        this.lon = lon;
+    }
+
+    LocationWeatherInfo(String id , String cityName, double lat, double lon){
+        this.id = id;
+        this.name = cityName;
         this.lat = lat;
         this.lon = lon;
     }

@@ -26,26 +26,20 @@
             android:layout_marginLeft="5dp"
             android:layout_marginStart="5dp"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:scrollbars="none">
 
             <LinearLayout
                 android:id="@+id/liner"
                 android:orientation="horizontal"
                 android:layout_width="wrap_content"
                 android:layout_marginRight="10dp"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:scrollbars="none">
 
             </LinearLayout>
 
         </HorizontalScrollView>
-
-        <TextView
-            android:id="@+id/txtContinue"
-            android:text="Continue"
-            android:textSize="25sp"
-            android:textColor="#fff"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
 
     </LinearLayout>
 

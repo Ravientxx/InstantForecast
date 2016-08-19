@@ -8,9 +8,9 @@
 
     <ImageView
         android:id="@+id/imageCity"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@drawable/logo1"/>
+        android:layout_width="200dp"
+        android:layout_height="300dp"
+        android:layout_marginLeft="10dp"/>
 
     <LinearLayout
         android:layout_gravity="center_horizontal"
