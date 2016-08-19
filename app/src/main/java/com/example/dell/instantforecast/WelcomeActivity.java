@@ -1,13 +1,13 @@
 package com.example.dell.instantforecast;
 
-import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Build;
+import android.os.Bundle;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.support.v7.app.AppCompatActivity;
 import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,136 +15,126 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
-import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.ArrayList;
-import java.util.zip.Inflater;
 
 public class WelcomeActivity extends AppCompatActivity {
 
     private ViewPager viewPager;
     private MyViewPagerAdapter myViewPagerAdapter;
     private LinearLayout dotsLayout;
-    private TextView txtClick;
     private TextView[] dots;
     private int[] layouts;
-    private Button btnSkip, btnNext;
     private PreferenceManager prefManager;
     private LinearLayout scrollView;
+    static ArrayList<LocationWeatherInfo> popularLocation;
+    static ArrayList<String> selectedLocation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         // Checking for first time launch - before calling setContentView()
-        prefManager = new PreferenceManager (this);
+        prefManager = new PreferenceManager(this);
         if (!prefManager.isFirstTimeLaunch()) {
             launchHomeScreen();
-            finish();
         }
-
-
         // Making notification bar transparent
         if (Build.VERSION.SDK_INT >= 21) {
             getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
         }
-
         setContentView(R.layout.activity_welcome);
-
+        initPopularLocations();
         viewPager = (ViewPager) findViewById(R.id.view_pager);
         dotsLayout = (LinearLayout) findViewById(R.id.layoutDots);
-        btnSkip = (Button) findViewById(R.id.btn_skip);
-        btnNext = (Button) findViewById(R.id.btn_next);
-        txtClick = (TextView)findViewById(R.id.txtContinue);
 
-        // layouts of all welcome sliders
-        // add few more layouts if you want
         layouts = new int[]{
                 R.layout.welcome_slide1,
-                R.layout.welcome_slide2,
-                R.layout.welcome_slide3,
-                R.layout.welcome_slide4};
+                R.layout.welcome_slide2};
 
-        // adding bottom dots
-        addBottomDots(0);
-
-        // making notification bar transparent
         changeStatusBarColor();
 
         myViewPagerAdapter = new MyViewPagerAdapter();
         viewPager.setAdapter(myViewPagerAdapter);
         viewPager.addOnPageChangeListener(viewPagerPageChangeListener);
+        viewPager.beginFakeDrag();
 
-        btnSkip.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                launchHomeScreen();
-            }
-        });
-
-        btnNext.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // checking for last page
-                // if last page home screen will be launched
-                int current = getItem(+1);
-                if (current < layouts.length) {
-                    // move to next screen
-                    viewPager.setCurrentItem(current);
-                    addCity();
-
-                } else {
-                    launchHomeScreen();
-                }
-            }
-        });
-        getSupportActionBar().hide();
-    }
-
-    String[] cities = { "New York", "Ho Chi Minh", "London", "Sydney", "Paris", "Singapore"};
-    Integer[] id = {R.drawable.newyork, R.drawable.ho_chi_minh, R.drawable.london, R.drawable.sydney, R.drawable.paris, R.drawable.singapore};
-    ArrayList<String> array = new ArrayList<>();
-    int i = 0;
-
-    private void addCity(){
-        LayoutInflater inflater = (LayoutInflater)getSystemService(LAYOUT_INFLATER_SERVICE);
-        scrollView = (LinearLayout) findViewById(R.id.liner);
-
-        for(i = 0; i < 6; i++){
-            View view = inflater.inflate(R.layout.item_city, null, false);
-            final ImageView imageView = (ImageView)view.findViewById(R.id.click);
-            final ImageView imageCity = (ImageView)view.findViewById(R.id.imageCity);
-            final TextView textView = (TextView)view.findViewById(R.id.txtCity);
-            LinearLayout linearLayout = (LinearLayout)view.findViewById(R.id.llCity);
-            linearLayout.setOnClickListener(new View.OnClickListener() {
+        final Button btnContinue = (Button) findViewById(R.id.btnContinue);
+        if (btnContinue != null) {
+            btnContinue.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    ImageView ve = (ImageView)v.findViewById(R.id.click);
-                    if(ve.getVisibility()==View.GONE) {
-
-                        imageView.setVisibility(View.VISIBLE);
-                        TextView textView1 = (TextView) v.findViewById(R.id.txtCity);
-                        String str = textView1.getText().toString();
-                        array.add(str);
-                        Toast.makeText(getApplicationContext(), str, Toast.LENGTH_LONG).show();
-                    }
-                    else {
-                        imageView.setVisibility(View.GONE);
-                        TextView textView1 = (TextView) v.findViewById(R.id.txtCity);
-                        String str = textView1.getText().toString();
-                        array.remove(str);
-                        Toast.makeText(getApplicationContext(), str, Toast.LENGTH_LONG).show();
+                    int current = getItem(+1);
+                    if (current < layouts.length) {
+                        btnContinue.setText("Finish");
+                        viewPager.setCurrentItem(current);
+                    } else {
+                        Intent intent = new Intent(WelcomeActivity.this, MainActivity.class);
+                        if (selectedLocation.size() == 0) {
+                            intent.putExtra("selectFromWelcome", false);
+                        } else {
+                            intent.putExtra("selectFromWelcome", true);
+                        }
+                        startActivity(intent);
+                        finish();
+                        prefManager.setFirstTimeLaunch(false);
                     }
                 }
             });
+        }
+        getSupportActionBar().hide();
+    }
 
-            textView.setText(cities[i]);
-            imageCity.setImageResource(id[i]);
+    boolean isClicked = true;
+
+    private synchronized void addCity() {
+        selectedLocation = new ArrayList<>();
+        LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
+        scrollView = (LinearLayout) findViewById(R.id.liner);
+        for (int i = 0; i < 4; i++) {
+            View view = inflater.inflate(R.layout.item_city, null, false);
+            final ImageView imageView = (ImageView) view.findViewById(R.id.click);
+            final TextView textView = (TextView) view.findViewById(R.id.txtCity);
+            LinearLayout linearLayout = (LinearLayout) view.findViewById(R.id.llCity);
+            linearLayout.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (isClicked) {
+                        isClicked = false;
+                        imageView.setVisibility(View.VISIBLE);
+                        TextView textView1 = (TextView) v.findViewById(R.id.txtCity);
+                        String str = textView1.getText().toString();
+                        selectedLocation.add(str);
+                    } else {
+                        imageView.setVisibility(View.GONE);
+                        isClicked = true;
+                        TextView textView1 = (TextView) v.findViewById(R.id.txtCity);
+                        String str = textView1.getText().toString();
+                        selectedLocation.remove(str);
+                    }
+                }
+            });
+            textView.setText(popularLocation.get(i).name);
+            ImageView imageCity = (ImageView) view.findViewById(R.id.imageCity);
+            switch (popularLocation.get(i).name) {
+                case "New York":
+                    imageCity.setImageResource(R.drawable.new_york);
+                    break;
+                case "London":
+                    imageCity.setImageResource(R.drawable.london);
+                    break;
+                case "Hồ Chí Minh":
+                    imageCity.setImageResource(R.drawable.ho_chi_minh);
+                    break;
+                case "Tokyo":
+                    imageCity.setImageResource(R.drawable.tokyo);
+                    break;
+            }
+
+
             scrollView.addView(view);
-
         }
     }
 
@@ -159,12 +149,12 @@ public class WelcomeActivity extends AppCompatActivity {
             dots[i] = new TextView(this);
             dots[i].setText(Html.fromHtml("&#8226;"));
             dots[i].setTextSize(35);
-            dots[i].setTextColor(getResources().getColor(R.color.dot_light_screen3));
+            dots[i].setTextColor(colorsInactive[currentPage]);
             dotsLayout.addView(dots[i]);
         }
 
         if (dots.length > 0)
-            dots[currentPage].setTextColor(getResources().getColor(R.color.bg_screen3));
+            dots[currentPage].setTextColor(colorsActive[currentPage]);
     }
 
     private int getItem(int i) {
@@ -173,26 +163,19 @@ public class WelcomeActivity extends AppCompatActivity {
 
     private void launchHomeScreen() {
         prefManager.setFirstTimeLaunch(false);
-        startActivity(new Intent(WelcomeActivity.this, SplashScreen.class));
+        Intent intent = new Intent(WelcomeActivity.this, SplashScreen.class);
+        intent.putExtra("selectFromWelcome", false);
+        startActivity(intent);
         finish();
     }
 
     //  viewpager change listener
     ViewPager.OnPageChangeListener viewPagerPageChangeListener = new ViewPager.OnPageChangeListener() {
-
         @Override
         public void onPageSelected(int position) {
-            addBottomDots(position);
-
-            // changing the next button text 'NEXT' / 'GOT IT'
-            if (position == layouts.length - 1) {
-                // last page. make button text to GOT IT
-                btnNext.setText(getString(R.string.start));
-                btnSkip.setVisibility(View.GONE);
-            } else {
-                // still pages are left
-                btnNext.setText(getString(R.string.next));
-                btnSkip.setVisibility(View.VISIBLE);
+            //addBottomDots(position);
+            if (position == 1) {
+                addCity();
             }
         }
 
@@ -207,9 +190,6 @@ public class WelcomeActivity extends AppCompatActivity {
         }
     };
 
-    /**
-     * Making notification bar transparent
-     */
     private void changeStatusBarColor() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             Window window = getWindow();
@@ -218,14 +198,12 @@ public class WelcomeActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * View pager adapter
-     */
     public class MyViewPagerAdapter extends PagerAdapter {
         private LayoutInflater layoutInflater;
 
         public MyViewPagerAdapter() {
         }
+
 
         @Override
         public Object instantiateItem(ViewGroup container, int position) {
@@ -253,5 +231,13 @@ public class WelcomeActivity extends AppCompatActivity {
             View view = (View) object;
             container.removeView(view);
         }
+    }
+
+    public void initPopularLocations() {
+        popularLocation = new ArrayList<>();
+        popularLocation.add(new LocationWeatherInfo("5128638", "New York", 43.000351, -75.499901));
+        popularLocation.add(new LocationWeatherInfo("2643743", "London", 51.50853, -0.12574));
+        popularLocation.add(new LocationWeatherInfo("1566083", "Hồ Chí Minh", 10.75, 106.666672));
+        popularLocation.add(new LocationWeatherInfo("1850147", "Tokyo", 35.689499, 139.691711));
     }
 }

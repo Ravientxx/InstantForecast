@@ -106,16 +106,15 @@ public class OpenWeatherMapApiManager {
         return conditionId;
     }
     public interface AsyncResponse {
-
-        void processFinish(String output1, String output2, String output3, String output4, String output5, String output6, String output7, String output8,int output9,String output10);
+        void processFinish(LocationWeatherInfo locationWeatherInfo);
     }
 
 
-    public static class placeIdTask extends AsyncTask<String, Void, JSONObject> {
+    public static class GetWeatherInfoTask extends AsyncTask<String, Void, JSONObject> {
 
         public AsyncResponse delegate = null;//Call back interface
 
-        public placeIdTask(AsyncResponse asyncResponse) {
+        public GetWeatherInfoTask(AsyncResponse asyncResponse) {
             delegate = asyncResponse;//Assigning call back interfacethrough constructor
         }
 
@@ -152,7 +151,21 @@ public class OpenWeatherMapApiManager {
                             json.getJSONObject("sys").getLong("sunrise") * 1000,
                             json.getJSONObject("sys").getLong("sunset") * 1000);
                     int conditionId = setConditionId(details.getString("icon"));
-                    delegate.processFinish(country ,city, description, temperature, humidity, pressure, updatedOn, iconText,conditionId, "" + (json.getJSONObject("sys").getLong("sunrise") * 1000));
+
+                    LocationWeatherInfo locationWeatherInfo = new LocationWeatherInfo();
+                    locationWeatherInfo.country = country;
+                    locationWeatherInfo.name = city;
+                    locationWeatherInfo.description = description;
+                    locationWeatherInfo.temperature = temperature;
+                    locationWeatherInfo.humidity = humidity;
+                    locationWeatherInfo.pressure = pressure;
+                    locationWeatherInfo.updateTime = updatedOn;
+                    locationWeatherInfo.weatherIconText = iconText;
+                    locationWeatherInfo.conditionId = conditionId;
+                    locationWeatherInfo.sunRise = "" + json.getJSONObject("sys").getLong("sunrise") * 1000;
+                    locationWeatherInfo.sunSet = "" + json.getJSONObject("sys").getLong("sunset") * 1000;
+
+                    delegate.processFinish(locationWeatherInfo);
 
                 }
             } catch (JSONException e) {

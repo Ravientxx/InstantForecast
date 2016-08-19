@@ -1,16 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    android:layout_width="match_parent"
+    android:orientation="vertical" android:layout_width="wrap_content"
     android:gravity="center_horizontal"
+    android:layout_marginLeft="10dp"
+    android:padding="5dp"
     android:id="@+id/llCity"
     android:layout_height="match_parent">
 
     <ImageView
         android:id="@+id/imageCity"
-        android:layout_width="150dp"
-        android:layout_height="200dp"
-        android:src="@drawable/newyork"/>
+        android:layout_width="200dp"
+        android:layout_height="300dp"
+        android:layout_marginLeft="10dp"/>
 
     <LinearLayout
         android:layout_gravity="center_horizontal"

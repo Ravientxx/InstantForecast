@@ -27,7 +27,7 @@ public class AddLocationMapActivity extends AppCompatActivity{
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_coordinate);
+        setContentView(R.layout.activity_add_location_map);
 
         SupportMapFragment supportMapFragment = (SupportMapFragment)getSupportFragmentManager().findFragmentById(R.id.map);
         supportMapFragment.getMapAsync(new OnMapReadyCallback() {
@@ -49,7 +49,7 @@ public class AddLocationMapActivity extends AppCompatActivity{
             @Override
             public void onMapClick(LatLng latLng) {
                 moveToNewPlace(latLng);
-                WeatherInfoFragment.loadWeatherInfo("add_location_map", String.valueOf(latLng.latitude), String.valueOf(latLng.longitude));
+                WeatherInfoFragment.loadWeatherInfo("add_location_map", latLng.latitude, latLng.longitude,true);
                 finish();
             }
         });

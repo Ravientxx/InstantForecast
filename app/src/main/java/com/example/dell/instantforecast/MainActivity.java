@@ -20,6 +20,7 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.google.android.gms.maps.GoogleMap;
 import com.google.gson.Gson;
 
 import net.danlew.android.joda.JodaTimeAndroid;
@@ -37,16 +38,17 @@ public class MainActivity extends AppCompatActivity {
     static AppDataModel appDataModel = new AppDataModel();
     static NavigationMenuListAdapter navigationMenuListAdapter;
     boolean firstStart = true;
-    boolean dataFileNotFound = false;
     static MainActivity mainActivity;
     GPSTracker gpsTracker;
     static Toolbar toolbar;
     ActionBar actionBar;
     static DrawerLayout drawer;
     NavigationView navigationView;
-    ListView navigationMenuList;
+    static ListView navigationMenuList;
     static ImageView background_image_view;
     static TextView city_name_textview, city_time_textview;
+    boolean selectFromWelcome;
+    GoogleMap map;
 
     private void initNavigationMenu() {
         drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -85,15 +87,15 @@ public class MainActivity extends AppCompatActivity {
                 Location myLocation = gpsTracker.getLocation();
                 WeatherInfoFragment.loadWeatherInfo(
                         "get_current_location",
-                        String.valueOf(myLocation.getLatitude()),
-                        String.valueOf(myLocation.getLongitude())
+                        myLocation.getLatitude(),
+                        myLocation.getLongitude(),
+                        true
                 );
                 drawer.closeDrawer(GravityCompat.START);
             }
 
         });
     }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -106,6 +108,9 @@ public class MainActivity extends AppCompatActivity {
         //Set layout for activity
         setContentView(R.layout.activity_main);
 
+        Intent intent = getIntent();
+        selectFromWelcome = intent.getBooleanExtra("selectFromWelcome", false);
+        System.out.println(selectFromWelcome);
         city_time_textview = (TextView) findViewById(R.id.city_time_textview);
         city_name_textview = (TextView) findViewById(R.id.city_name_textview);
 
@@ -127,7 +132,6 @@ public class MainActivity extends AppCompatActivity {
         initNavigationMenu();
 
         background_image_view = (ImageView) findViewById(R.id.background_image_view);
-
     }
 
     @Override
@@ -140,14 +144,34 @@ public class MainActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
         loadAppData();
-        if (firstStart == true && dataFileNotFound == false) {
+        if (firstStart == true) {
             Location location = gpsTracker.getLocation();
             WeatherInfoFragment.loadWeatherInfo(
                     "get_current_location",
-                    String.valueOf(location.getLatitude()),
-                    String.valueOf(location.getLongitude())
+                    location.getLatitude(),
+                    location.getLongitude(),
+                    true
             );
             firstStart = false;
+            if (selectFromWelcome) {
+                appDataModel.city_list = new ArrayList<LocationWeatherInfo>();
+                for (int i = 0; i < WelcomeActivity.selectedLocation.size(); i++) {
+                    for (int j = 0; j < WelcomeActivity.popularLocation.size(); j++) {
+                        if(WelcomeActivity.selectedLocation.get(i).equals(WelcomeActivity.popularLocation.get(j).name)){
+                            LocationWeatherInfo locationInfo = WelcomeActivity.popularLocation.get(j);
+                            WeatherInfoFragment.loadWeatherInfo(
+                                    locationInfo.id,
+                                    locationInfo.lat,
+                                    locationInfo.lon,
+                                    false
+                            );
+                            break;
+                        }
+                    }
+                }
+                WelcomeActivity.selectedLocation.clear();
+                WelcomeActivity.popularLocation.clear();
+            }
         }
     }
 
@@ -166,9 +190,6 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(new Intent(MainActivity.this, AppSettingActivity.class));
                 return true;
             case R.id.action_abouts:
-                background_image_view.setImageResource(R.drawable.rain_day);
-                //clearAppData();
-                //updateNavigationMenuList();
                 return true;
         }
         return false;
@@ -210,7 +231,6 @@ public class MainActivity extends AppCompatActivity {
             System.out.println(string1);
         } catch (FileNotFoundException e) {
             appDataModel.city_list = new ArrayList<LocationWeatherInfo>();
-            dataFileNotFound = true;
         } catch (Exception e) {
             e.printStackTrace();
         } finally {

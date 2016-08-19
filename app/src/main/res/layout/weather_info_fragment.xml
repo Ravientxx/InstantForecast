@@ -132,7 +132,6 @@
             android:layout_alignParentBottom="true"/>
     </RelativeLayout>
         <RelativeLayout
-            android:id="@+id/chart"
             android:layout_width="match_parent"
             android:layout_height="100dp"
             android:background="#59000000"
@@ -155,38 +154,30 @@
                 android:textColor="#FFFFFF"
                 android:layout_alignParentBottom="true"/>
         </RelativeLayout>
-
-        <RelativeLayout
+        <LinearLayout
+            android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="300dp"
             android:background="#59000000"
             android:id="@+id/map"
-            android:layout_margin="10dp">
+            android:layout_margin="10dp"
+            android:padding="10dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Map"
+                android:textSize="@dimen/main_text_size"
+                android:textColor="#FFFFFF"/>
 
             <FrameLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content">
+                android:clickable="true"
+                android:id="@+id/map_view"
+                android:name="com.google.android.gms.maps.SupportMapFragment"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
 
-                <com.google.android.gms.maps.MapView
-                    android:id="@+id/mapview"
-                    android:clickable="true"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
-
-                <ImageView
-                    android:id="@+id/button"
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:layout_marginRight="10dp"
-                    android:layout_marginEnd="10dp"
-                    android:layout_marginBottom="10dp"
-                    android:layout_gravity="bottom|right"
-                    android:src="@drawable/extend"
-                    />
-
-            </FrameLayout>
-
-        </RelativeLayout>
+        </LinearLayout>
     </LinearLayout>
 
 
