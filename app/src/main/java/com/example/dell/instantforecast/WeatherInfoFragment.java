@@ -24,8 +24,11 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.ArrayList;
 
@@ -42,10 +45,10 @@ public class WeatherInfoFragment extends Fragment {
     static int screenHeight;
     static ArrayList<Bitmap> blurred_background_image;
     static Bitmap background_image;
-    RelativeLayout mapl, clickMap;
+    RelativeLayout mapl, clickMap, chart;
     static GoogleMap map;
     MapView mapView;
-    Button clickl;
+    ImageView clickl;
     static RelativeLayout current_condition_layout;
 
     @Override
@@ -77,7 +80,7 @@ public class WeatherInfoFragment extends Fragment {
         DisplayMetrics displaymetrics = new DisplayMetrics();
         MainActivity.mainActivity.getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
         screenHeight = displaymetrics.heightPixels;
-        clickl = (Button)view.findViewById(R.id.button);
+        clickl = (ImageView) view.findViewById(R.id.button);
         clickl.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -91,7 +94,18 @@ public class WeatherInfoFragment extends Fragment {
             @Override
             public void onMapReady(GoogleMap googleMap) {
                 map = googleMap;
+                googleMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+                //map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(Double.parseDouble(MainActivity.appDataModel.current_city.lat),Double.parseDouble(MainActivity.appDataModel.current_city.lon)), 14.0f));
+                //map.animateCamera(CameraUpdateFactory.zoomTo(12), 1000, null);
+            }
+        });
 
+        chart = (RelativeLayout)view.findViewById(R.id.chart);
+        chart.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getActivity(), ChartActivity.class);
+                startActivity(intent);
             }
         });
 
@@ -144,17 +158,23 @@ public class WeatherInfoFragment extends Fragment {
                     );
 
                     MainActivity.appDataModel.current_city = current_locationWeatherInfo;
+                    Toast.makeText(MainActivity.mainActivity, current_locationWeatherInfo.country, Toast.LENGTH_LONG).show();
 
                     //CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(new LatLng(Double.parseDouble(MainActivity.appDataModel.current_city.lat), Double.parseDouble(MainActivity.appDataModel.current_city.lon)), 13);
-                    CameraPosition cameraPosition = new CameraPosition.Builder().target(new LatLng(Double.parseDouble(MainActivity.appDataModel.current_city.lat),
+                    /*CameraPosition cameraPosition = new CameraPosition.Builder().target(new LatLng(Double.parseDouble(MainActivity.appDataModel.current_city.lat),
                             Double.parseDouble(MainActivity.appDataModel.current_city.lon)))
                             .zoom(15)
                             .tilt(40)
-                            .build();
-
-                    map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
-                    map.getUiSettings().setAllGesturesEnabled(true);
-                    map.getUiSettings().setZoomControlsEnabled(true);
+                            .build();*/
+                    map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(Double.parseDouble(MainActivity.appDataModel.current_city.lat),Double.parseDouble(MainActivity.appDataModel.current_city.lon)), 14.0f));
+                    map.animateCamera(CameraUpdateFactory.zoomTo(12), 1000, null);
+                    MarkerOptions options = new MarkerOptions();
+                    options.position(new LatLng(Double.parseDouble(MainActivity.appDataModel.current_city.lat),Double.parseDouble(MainActivity.appDataModel.current_city.lon)));
+                    options.title("Your location");
+                    options.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
+                    Marker marker = map.addMarker(options);
+                   /* map.getUiSettings().setAllGesturesEnabled(true);
+                    map.getUiSettings().setZoomControlsEnabled(true);*/
                     if(!locationId.equals("get_current_location")){
                         int locationIndex = -1;
                         for (int i = 0; i < MainActivity.appDataModel.city_list.size(); i++) {
@@ -223,5 +243,29 @@ public class WeatherInfoFragment extends Fragment {
         //humidity_field.setText("Humidity: "+weather_humidity);
         //pressure_field.setText("Pressure: "+weather_pressure);
 
+    }
+
+    @Override
+    public void onResume() {
+        mapView.onResume();
+        super.onResume();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        mapView.onPause();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        mapView.onDestroy();
+    }
+
+    @Override
+    public void onLowMemory() {
+        super.onLowMemory();
+        mapView.onLowMemory();
     }
 }

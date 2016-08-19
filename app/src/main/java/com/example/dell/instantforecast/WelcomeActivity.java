@@ -104,7 +104,8 @@ public class WelcomeActivity extends AppCompatActivity {
         getSupportActionBar().hide();
     }
 
-    String[] cities = { "New York", "Ha Noi", "Thanh Hoa", "London"};
+    String[] cities = { "New York", "Ho Chi Minh", "London", "Sydney", "Paris", "Singapore"};
+    Integer[] id = {R.drawable.newyork, R.drawable.ho_chi_minh, R.drawable.london, R.drawable.sydney, R.drawable.paris, R.drawable.singapore};
     ArrayList<String> array = new ArrayList<>();
     int i = 0;
 
@@ -112,9 +113,10 @@ public class WelcomeActivity extends AppCompatActivity {
         LayoutInflater inflater = (LayoutInflater)getSystemService(LAYOUT_INFLATER_SERVICE);
         scrollView = (LinearLayout) findViewById(R.id.liner);
 
-        for(i = 0; i < 4; i++){
+        for(i = 0; i < 6; i++){
             View view = inflater.inflate(R.layout.item_city, null, false);
             final ImageView imageView = (ImageView)view.findViewById(R.id.click);
+            final ImageView imageCity = (ImageView)view.findViewById(R.id.imageCity);
             final TextView textView = (TextView)view.findViewById(R.id.txtCity);
             LinearLayout linearLayout = (LinearLayout)view.findViewById(R.id.llCity);
             linearLayout.setOnClickListener(new View.OnClickListener() {
@@ -127,7 +129,7 @@ public class WelcomeActivity extends AppCompatActivity {
                         TextView textView1 = (TextView) v.findViewById(R.id.txtCity);
                         String str = textView1.getText().toString();
                         array.add(str);
-                        Toast.makeText(getApplicationContext(), "jjj", Toast.LENGTH_LONG).show();
+                        Toast.makeText(getApplicationContext(), str, Toast.LENGTH_LONG).show();
                     }
                     else {
                         imageView.setVisibility(View.GONE);
@@ -140,6 +142,7 @@ public class WelcomeActivity extends AppCompatActivity {
             });
 
             textView.setText(cities[i]);
+            imageCity.setImageResource(id[i]);
             scrollView.addView(view);
 
         }
@@ -156,12 +159,12 @@ public class WelcomeActivity extends AppCompatActivity {
             dots[i] = new TextView(this);
             dots[i].setText(Html.fromHtml("&#8226;"));
             dots[i].setTextSize(35);
-            dots[i].setTextColor(colorsInactive[currentPage]);
+            dots[i].setTextColor(getResources().getColor(R.color.dot_light_screen3));
             dotsLayout.addView(dots[i]);
         }
 
         if (dots.length > 0)
-            dots[currentPage].setTextColor(colorsActive[currentPage]);
+            dots[currentPage].setTextColor(getResources().getColor(R.color.bg_screen3));
     }
 
     private int getItem(int i) {
