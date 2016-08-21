@@ -61,6 +61,7 @@
         <activity android:name=".AddLocationMapActivity"></activity>
         <activity android:name=".EditLocationActivity"></activity>
         <activity android:name=".DailyNotificationSettingActivity"></activity>
+        <activity android:name=".ChartActivity"/>
 
         <receiver android:process=":remote" android:name=".MorningNotificationReceiver"></receiver>
         <receiver android:process=":remote" android:name=".AfternoonNotificationReceiver"></receiver>

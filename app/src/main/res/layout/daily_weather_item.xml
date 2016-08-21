@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="50dp">
+
+    <TextView
+        android:id="@+id/weather_icon"
+        android:layout_width="50dp"
+        android:layout_height="match_parent"
+        android:allowUndo="false"
+        android:gravity="center"
+        android:text="icon"
+        android:textColor="#FFFFFF"
+        android:textSize="30dp" />
+
+    <TextView
+        android:id="@+id/week_day"
+        android:layout_width="180dp"
+        android:layout_height="match_parent"
+        android:layout_toRightOf="@+id/weather_icon"
+        android:gravity="center_vertical"
+        android:text="Ho Chi Minh"
+        android:textSize="20dp"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textColor="#FFFFFF"
+        android:maxLines="1"
+        android:ellipsize="end"/>
+
+    <TextView
+        android:id="@+id/min_temperature"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_alignParentRight="true"
+        android:gravity="center"
+        android:textColor="#00aeff"
+        android:textSize="30dp" />
+    <TextView
+        android:id="@+id/temp_divider"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_toLeftOf="@+id/min_temperature"
+        android:gravity="center"
+        android:text="/"
+        android:textColor="#fff"
+        android:textSize="30dp" />
+    <TextView
+        android:id="@+id/max_temperature"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_toLeftOf="@+id/temp_divider"
+        android:gravity="center"
+        android:textColor="#ff1500"
+        android:textSize="30dp" />
+
+</RelativeLayout>

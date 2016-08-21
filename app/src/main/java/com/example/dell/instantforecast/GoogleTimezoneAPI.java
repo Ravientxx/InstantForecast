@@ -16,21 +16,19 @@ import java.net.URL;
  */
 public class GoogleTimezoneAPI {
 
-    private static final String API_URL = "https://maps.googleapis.com/maps/api/timezone/json?location=%s,%s&timestamp=0&key=%s";
-    private static final String API_KEY = "AIzaSyBNUiwT7NkDS9Neeq0-0AokMCs4ajndisU";
+    private static final String API_URL
+    = "https://maps.googleapis.com/maps/api/timezone/json?location=%s,%s&timestamp=0&key=%s";
+    private static final String API_KEY
+    = "AIzaSyBNUiwT7NkDS9Neeq0-0AokMCs4ajndisU";
     static public String current_timezone;
     public interface AsyncResponse {
         void processFinish(String output);
     }
-
     public static class getDateTimeByLocationTask extends AsyncTask<String, Void, String> {
-
         public AsyncResponse delegate = null;//Call back interface
-
         public getDateTimeByLocationTask (AsyncResponse asyncResponse) {
             delegate = asyncResponse;//Assigning call back interfacethrough constructor
         }
-
         @Override
         protected String doInBackground(String... params) {
 
@@ -38,7 +36,6 @@ public class GoogleTimezoneAPI {
             jsonWeather = getTimezoneID(params[0], params[1]);
             return jsonWeather;
         }
-
         @Override
         protected void onPostExecute(String timezone) {
             if (timezone != null) {

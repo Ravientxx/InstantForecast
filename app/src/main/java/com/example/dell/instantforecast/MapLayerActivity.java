@@ -1,5 +1,6 @@
 package com.example.dell.instantforecast;
 
+import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -9,9 +10,14 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CameraPosition;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.TileOverlay;
 import com.google.android.gms.maps.model.TileOverlayOptions;
 import com.google.android.gms.maps.model.TileProvider;
@@ -109,6 +115,27 @@ public class MapLayerActivity extends AppCompatActivity{
     private void setUpMap(){
         tileOverlay = map.addTileOverlay(new TileOverlayOptions().tileProvider(createTileProvider()).transparency(0.5f));
         updateTileOverlayTransparency();
+        CameraPosition cameraPosition = null;
+        if(MainActivity.appDataModel.selected_location_index == -1){
+            Location location = MainActivity.gpsTracker.getLocation();
+            cameraPosition = new CameraPosition.Builder().target(
+                    new LatLng(location.getLatitude(), location.getLongitude()))
+                    .zoom(8)
+                    .build();
+        }
+        else{
+            cameraPosition = new CameraPosition.Builder().target(
+                    new LatLng(MainActivity.appDataModel.city_list.get(MainActivity.appDataModel.selected_location_index).lat, MainActivity.appDataModel.city_list.get(MainActivity.appDataModel.selected_location_index).lon))
+                    .zoom(8)
+                    .build();
+        }
+
+        MarkerOptions options = new MarkerOptions();
+        options.position(new LatLng(MainActivity.appDataModel.city_list.get(MainActivity.appDataModel.selected_location_index).lat,MainActivity.appDataModel.city_list.get(MainActivity.appDataModel.selected_location_index).lon));
+        options.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE));
+        map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+        map.getUiSettings().setZoomControlsEnabled(true);
+        map.addMarker(options);
     }
 
     public void updateTileOverlayTransparency() {

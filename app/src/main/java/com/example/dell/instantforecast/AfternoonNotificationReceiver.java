@@ -14,6 +14,7 @@ import android.support.v4.app.NotificationCompat;
 import android.widget.RemoteViews;
 
 import com.mikepenz.iconics.IconicsDrawable;
+import com.mikepenz.iconics.typeface.IIcon;
 import com.mikepenz.weather_icons_typeface_library.WeatherIcons;
 
 /**
@@ -34,16 +35,30 @@ public class AfternoonNotificationReceiver extends BroadcastReceiver {
                     new OpenWeatherMapApiManager.AsyncResponse() {
                         public void processFinish(final LocationWeatherInfo current_locationWeatherInfo) {
                             RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.weather_notification);
+                            IIcon iIcon ;
+                            switch (current_locationWeatherInfo.mainGroup){
+                                case "Clouds":
+                                    iIcon = WeatherIcons.Icon.wic_cloudy;
+                                    break;
+                                case "Rain":
+                                    iIcon = WeatherIcons.Icon.wic_rain;
+                                    break;
+                                case "Clear":
+                                    iIcon = WeatherIcons.Icon.wic_wu_clear;
+                                    break;
+                                default:
+                                    iIcon = WeatherIcons.Icon.wic_cloud;
+                                    break;
+                            }
                             Drawable iCon = new IconicsDrawable(context)
-                                    .icon(WeatherIcons.Icon.wic_cloudy)
+                                    .icon(iIcon)
                                     .color(Color.WHITE)
                                     .sizeDp(50);
                             AppSettingModel appSettingModel = GeneralUtils.loadAppSetting(context);
                             String temperature = current_locationWeatherInfo.temperature;
                             if(appSettingModel != null){
                                 if(appSettingModel.Unit.equals("F")){
-                                    double oldTemp = Double.parseDouble(temperature.substring(0,temperature.length()-1));
-                                    temperature = String.format("%.0f", GeneralUtils.Celsius2Fahrenheit(oldTemp)) + "°";
+                                    temperature = GeneralUtils.Celsius2Fahrenheit(temperature);
                                 }
                             }
                             remoteViews.setImageViewBitmap(R.id.weather_image, GeneralUtils.drawableToBitmap(iCon));
@@ -62,7 +77,7 @@ public class AfternoonNotificationReceiver extends BroadcastReceiver {
                             pintent.putExtra("locationLatFromNotification",Lat);
                             pintent.putExtra("locationLonFromNotification",Lon);
                             pintent.putExtra("locationIdFromNotification",locationId);
-                            PendingIntent pi = PendingIntent.getActivity(context, 1507, pintent, Intent.FILL_IN_ACTION);
+                            PendingIntent pi = PendingIntent.getActivity(context, 1507, pintent, PendingIntent.FLAG_CANCEL_CURRENT);
                             mBuilder.setContentIntent(pi);
                             NotificationManager mNotificationManager =
                                     (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);

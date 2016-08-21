@@ -51,23 +51,23 @@
         android:clickable="true"
         android:background="@android:drawable/list_selector_background"/>
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="#fff"
-        android:layout_marginTop="10dp"
-        android:layout_below="@+id/daily_notification"/>
+    <!--<View-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="1dp"-->
+        <!--android:background="#fff"-->
+        <!--android:layout_marginTop="10dp"-->
+        <!--android:layout_below="@+id/daily_notification"/>-->
 
-    <TextView
-        android:id="@+id/ongoing_notification"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Ongoing Notification"
-        android:textColor="#fff"
-        android:textSize="@dimen/main_text_size"
-        android:layout_marginTop="20dp"
-        android:layout_below="@+id/daily_notification"
-        android:clickable="true"
-        android:background="@android:drawable/list_selector_background"/>
+    <!--<TextView-->
+        <!--android:id="@+id/ongoing_notification"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:text="Ongoing Notification"-->
+        <!--android:textColor="#fff"-->
+        <!--android:textSize="@dimen/main_text_size"-->
+        <!--android:layout_marginTop="20dp"-->
+        <!--android:layout_below="@+id/daily_notification"-->
+        <!--android:clickable="true"-->
+        <!--android:background="@android:drawable/list_selector_background"/>-->
 
 </RelativeLayout>

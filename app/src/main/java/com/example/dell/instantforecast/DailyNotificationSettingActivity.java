@@ -99,9 +99,37 @@ public class DailyNotificationSettingActivity extends AppCompatActivity {
             }
         });
         morning_time.setText(appSettingModel.dailyMorningTime);
-        morning_location.setText(appSettingModel.dailyMorningLocation);
         afternoon_time.setText(appSettingModel.dailyAfternoonTime);
-        afternoon_location.setText(appSettingModel.dailyAfternoonLocation);
+
+        int i1 = -1,i2 = -1;
+        String name1 = "";
+        String name2 = "";
+        if(appSettingModel.dailyMorningLocation.length() > 0){
+            name1 =  appSettingModel.dailyMorningLocation.substring(0,appSettingModel.dailyMorningLocation.indexOf(","));
+        }
+        if(appSettingModel.dailyAfternoonLocation.length() > 0){
+            name2 = appSettingModel.dailyAfternoonLocation.substring(0,appSettingModel.dailyAfternoonLocation.indexOf(","));
+        }
+        for(int i = 0 ; i < MainActivity.appDataModel.city_list.size(); i++){
+            if(name1.equals(MainActivity.appDataModel.city_list.get(i).name)){
+                i1 = i;
+            }
+            if(name2.equals(MainActivity.appDataModel.city_list.get(i).name)){
+                i2 = i;
+            }
+        }
+        if(i1 == -1){
+            morning_location.setText("");
+            alarmService.stopAlarm();
+        }else{
+            morning_location.setText(appSettingModel.dailyMorningLocation);
+        }
+        if(i2 == -1){
+            afternoon_location.setText("");
+            alarmService.stopAlarm();
+        }else{
+            afternoon_location.setText(appSettingModel.dailyAfternoonLocation);
+        }
     }
 
     public void onActivateNotification(boolean isActivated){
@@ -330,7 +358,7 @@ public class DailyNotificationSettingActivity extends AppCompatActivity {
                 morningIntent.putExtra("locationLon",locationWeatherInfo.lon);
                 morningIntent.putExtra("locationId",locationWeatherInfo.id);
                 morningIntent.putExtra("locationName",name);
-                PendingIntent morningSender = PendingIntent.getBroadcast(dailyNotificationSettingActivity, 0, morningIntent, Intent.FILL_IN_DATA);
+                PendingIntent morningSender = PendingIntent.getBroadcast(dailyNotificationSettingActivity, 2205, morningIntent, PendingIntent.FLAG_CANCEL_CURRENT);
                 am.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(),
                         AlarmManager.INTERVAL_DAY, morningSender);
                 System.out.println("Morning alarm started : " + name);
@@ -356,7 +384,7 @@ public class DailyNotificationSettingActivity extends AppCompatActivity {
                 afternoonIntent.putExtra("locationLon",locationWeatherInfo.lon);
                 afternoonIntent.putExtra("locationId",locationWeatherInfo.id);
                 afternoonIntent.putExtra("locationName",name);
-                PendingIntent afternoonSender = PendingIntent.getBroadcast(dailyNotificationSettingActivity, 0, afternoonIntent, Intent.FILL_IN_DATA);
+                PendingIntent afternoonSender = PendingIntent.getBroadcast(dailyNotificationSettingActivity, 2206, afternoonIntent, PendingIntent.FLAG_CANCEL_CURRENT);
                 am.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(),
                         AlarmManager.INTERVAL_DAY, afternoonSender);
                 System.out.println("Afternoon alarm started : " + name);
@@ -367,12 +395,12 @@ public class DailyNotificationSettingActivity extends AppCompatActivity {
             AlarmManager alarmManager = (AlarmManager) dailyNotificationSettingActivity.getSystemService(Context.ALARM_SERVICE);
 
             Intent morningIntent = new Intent(dailyNotificationSettingActivity, MorningNotificationReceiver.class);
-            PendingIntent morningSender = PendingIntent.getBroadcast(dailyNotificationSettingActivity, 0, morningIntent, 0);
+            PendingIntent morningSender = PendingIntent.getBroadcast(dailyNotificationSettingActivity, 2205, morningIntent, 0);
             alarmManager.cancel(morningSender);
             System.out.println("Morning Alarm stopped");
 
             Intent afternoonIntent = new Intent(dailyNotificationSettingActivity, AfternoonNotificationReceiver.class);
-            PendingIntent afternoonSender = PendingIntent.getBroadcast(dailyNotificationSettingActivity, 0, afternoonIntent, 0);
+            PendingIntent afternoonSender = PendingIntent.getBroadcast(dailyNotificationSettingActivity, 2206, afternoonIntent, 0);
             alarmManager.cancel(afternoonSender);
             System.out.println("Afternoon Alarm stopped");
         }

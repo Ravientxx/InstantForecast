@@ -6,6 +6,7 @@ import android.app.PendingIntent;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.location.Location;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.NotificationCompat;
@@ -25,7 +26,6 @@ import com.mikepenz.weather_icons_typeface_library.WeatherIcons;
  */
 public class AppSettingActivity extends AppCompatActivity {
     static AppSettingActivity currentSetting;
-    static boolean usingCelcius;
     static public int MORNING_NOTIFICATION_ID = 1570;
     static public int AFTERNOON_NOTIFICATION_ID = 1571;
     final int ONGOING_NOTIFICATION_ID = 2205;
@@ -56,8 +56,9 @@ public class AppSettingActivity extends AppCompatActivity {
                 public void onClick(View v) {
                     C_Button.setBackgroundColor(getResources().getColor(R.color.switch_button_on));
                     F_Button.setBackgroundColor(getResources().getColor(R.color.switch_button_off));
-                    usingCelcius = true;
                     appSettingModel.Unit = "C";
+                    GeneralUtils.saveAppSetting(currentSetting,appSettingModel);
+                    updateDataWithUnit("C");
                 }
             });
             F_Button.setOnClickListener(new View.OnClickListener() {
@@ -65,8 +66,9 @@ public class AppSettingActivity extends AppCompatActivity {
                 public void onClick(View v) {
                     C_Button.setBackgroundColor(getResources().getColor(R.color.switch_button_off));
                     F_Button.setBackgroundColor(getResources().getColor(R.color.switch_button_on));
-                    usingCelcius = false;
                     appSettingModel.Unit = "F";
+                    GeneralUtils.saveAppSetting(currentSetting,appSettingModel);
+                    updateDataWithUnit("F");
                 }
             });
         }
@@ -80,15 +82,15 @@ public class AppSettingActivity extends AppCompatActivity {
             });
         }
 
-        TextView ongoingNotification = (TextView) findViewById(R.id.ongoing_notification);
-        if (ongoingNotification != null) {
-            ongoingNotification.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    activateOngoingNotification();
-                }
-            });
-        }
+//        TextView ongoingNotification = (TextView) findViewById(R.id.ongoing_notification);
+//        if (ongoingNotification != null) {
+//            ongoingNotification.setOnClickListener(new View.OnClickListener() {
+//                @Override
+//                public void onClick(View v) {
+//                    activateOngoingNotification();
+//                }
+//            });
+//        }
 
     }
 
@@ -97,17 +99,13 @@ public class AppSettingActivity extends AppCompatActivity {
         super.onStart();
         appSettingModel = GeneralUtils.loadAppSetting(this);
         if(appSettingModel.Unit.equals("C")){
-            C_Button.callOnClick();
+            C_Button.setBackgroundColor(getResources().getColor(R.color.switch_button_on));
+            F_Button.setBackgroundColor(getResources().getColor(R.color.switch_button_off));
         }
         else{
-            F_Button.callOnClick();
+            C_Button.setBackgroundColor(getResources().getColor(R.color.switch_button_off));
+            F_Button.setBackgroundColor(getResources().getColor(R.color.switch_button_on));
         }
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        GeneralUtils.saveAppSetting(this,appSettingModel);
     }
 
     @Override
@@ -143,6 +141,32 @@ public class AppSettingActivity extends AppCompatActivity {
         NotificationManager notificationManager =
                 (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 
-        //notificationManager.notify(DAILY_NOTIFICATION_ID, n);
+        notificationManager.notify(ONGOING_NOTIFICATION_ID, n);
+    }
+
+    public static void updateDataWithUnit(String Unit){
+        if(Unit.equals("C")){
+            for(int i = 0 ; i < MainActivity.appDataModel.city_list.size(); i++){
+                LocationWeatherInfo location = GeneralUtils.locationWithCelsius(MainActivity.appDataModel.city_list.get(i));
+                MainActivity.appDataModel.city_list.remove(i);
+                MainActivity.appDataModel.city_list.add(i,location);
+            }
+        }else{
+            for(int i = 0 ; i < MainActivity.appDataModel.city_list.size(); i++){
+                LocationWeatherInfo location = GeneralUtils.locationWithFahrenheit(MainActivity.appDataModel.city_list.get(i));
+                MainActivity.appDataModel.city_list.remove(i);
+                MainActivity.appDataModel.city_list.add(i,location);
+            }
+        }
+        MainActivity.navigationMenuListAdapter.notifyDataSetChanged();
+        if(MainActivity.appDataModel.selected_location_index == -1){
+            Location location = MainActivity.gpsTracker.getLocation();
+            WeatherInfoFragment.loadWeather(
+                    new LocationWeatherInfo("get_current_location", 0, location.getLatitude(), location.getLongitude()),
+                    true);
+        }
+        else{
+            WeatherInfoFragment.loadWeather(MainActivity.appDataModel.city_list.get(MainActivity.appDataModel.selected_location_index),true);
+        }
     }
 }
