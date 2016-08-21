@@ -33,6 +33,16 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyD9zx-hn0i_8qiGL4jCAH-7oriX37qdQvo"/>
 
+        <provider
+            android:name="android.support.v4.content.FileProvider"
+            android:authorities="com.example.dell.instantforecast.fileprovider"
+            android:grantUriPermissions="true"
+            android:exported="false">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/filepaths" />
+        </provider>
+
         <!-- Main activity -->
         <activity
             android:name="com.example.dell.instantforecast.MainActivity"

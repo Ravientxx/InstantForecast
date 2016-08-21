@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -15,7 +16,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.widget.Adapter;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -54,9 +59,17 @@ import com.google.android.gms.maps.model.TileOverlayOptions;
 import com.google.android.gms.maps.model.TileProvider;
 import com.google.android.gms.maps.model.UrlTileProvider;
 
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
+import org.xmlpull.v1.XmlPullParserFactory;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.Array;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Dell on 8/13/2016.
@@ -76,11 +89,15 @@ public class WeatherInfoFragment extends Fragment {
     static RelativeLayout current_condition_layout, chart2;
     static WeatherInfoFragment frag;
     SupportMapFragment mSupportMapFragment;
+    static List<SingleItem> headLines, linkss;
+    static ListView listRss;
+    SingleItem selectedNewsItem;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.weather_info_fragment, container, false);
+
         mSupportMapFragment = (SupportMapFragment) getFragmentManager().findFragmentById(R.id.map_view);
         if (mSupportMapFragment == null) {
             FragmentManager fragmentManager = getFragmentManager();
@@ -104,7 +121,7 @@ public class WeatherInfoFragment extends Fragment {
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         frag = this;
-
+        linkss = new ArrayList<SingleItem>();
         detailsField = (TextView) view.findViewById(R.id.details_field);
         currentTemperatureField = (TextView) view.findViewById(R.id.current_temperature);
         weatherIcon = (TextView) view.findViewById(R.id.weather_icon);
@@ -126,8 +143,25 @@ public class WeatherInfoFragment extends Fragment {
                 startActivity(intent);
             }
         });
+
         mChart = (CombinedChart) view.findViewById(R.id.chart1);
         showChart();
+
+
+        listRss = (ListView)view.findViewById(R.id.myListView);
+        listRss.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                selectedNewsItem = linkss.get(position);
+                final Uri storyLink = Uri.parse(selectedNewsItem.getLink());
+                Intent intent = new Intent(Intent.ACTION_VIEW, storyLink);
+                startActivity(intent);
+            }
+        });
+
+        DownloadRssFeed downloader = new DownloadRssFeed(MainActivity.mainActivity);
+        downloader.execute("http://tuoitre.vn/rss/tt-the-gioi.rss");
+
         current_condition_layout = (RelativeLayout) view.findViewById(R.id.current_condition_screen);
         blurred_background_image = new ArrayList<>();
 
@@ -157,6 +191,8 @@ public class WeatherInfoFragment extends Fragment {
                 MainActivity.mainActivity.background_image_view.setScaleType(ImageView.ScaleType.CENTER);
             }
         });
+
+
     }
 
     static public void loadWeatherInfo(final String locationId, final double Lat, final double Lon,final boolean displayWeather) {
@@ -469,4 +505,5 @@ public class WeatherInfoFragment extends Fragment {
 
         return tileProvider;
     }
+
 }

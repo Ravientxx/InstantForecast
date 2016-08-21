@@ -24,13 +24,12 @@ import javax.xml.parsers.DocumentBuilderFactory;
  * Created by USER on 8/13/2016.
  */
 public class DownloadRssFeed extends AsyncTask<String, Void, ArrayList<SingleItem>> {
-    ShowHeadlines callerContext; //caller class
+    Context callerContext; //caller class
     String urlAddress;
-    String urlCaption;
     ProgressDialog dialog = null;
 
     public DownloadRssFeed(Context callerContext) {
-        this.callerContext = (ShowHeadlines) callerContext;
+        this.callerContext = callerContext;
         dialog = new ProgressDialog(callerContext);
     }
 
@@ -44,9 +43,6 @@ public class DownloadRssFeed extends AsyncTask<String, Void, ArrayList<SingleIte
     protected ArrayList<SingleItem> doInBackground(String... params) {
         ArrayList<SingleItem> newsList = new ArrayList<SingleItem>();
         urlAddress = params[0]; // eg. "http://www.npr.org/rss/rss.php?id=1004"
-        urlCaption = params[1]; // eg. "World News”
-        this.dialog.setMessage("Please wait\nReading RSS feed " +
-                urlCaption + "...");
         try {
 // try to get connected to RSS source
             URL url = new URL(urlAddress);
@@ -83,13 +79,13 @@ public class DownloadRssFeed extends AsyncTask<String, Void, ArrayList<SingleIte
     @Override
     protected void onPostExecute(ArrayList<SingleItem> result) {
         super.onPostExecute(result);
-        callerContext.newsList = result;
+        WeatherInfoFragment.linkss = result;
 // the 'result' list contains headlines for selected news category
 // use custom row layout (small font, blue background on state-pressed)
         int layoutID = R.layout.my_simple_list_item_1;
         ArrayAdapter<SingleItem> adapterNews =
                 new ArrayAdapter<SingleItem>(callerContext, layoutID, result);
-        callerContext.myListView.setAdapter(adapterNews);
+        WeatherInfoFragment.listRss.setAdapter(adapterNews);
         dialog.dismiss();
     }
 

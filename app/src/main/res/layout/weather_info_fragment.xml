@@ -179,6 +179,21 @@
                 android:layout_height="wrap_content"/>
 
         </LinearLayout>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="300dp"
+            android:background="#59000000"
+            android:id="@+id/web"
+            android:layout_margin="10dp"
+            android:padding="10dp">
+
+            <ListView
+                android:id="@+id/myListView"
+                android:layout_width="match_parent"
+                android:layout_height="300dp"/>
+
+        </RelativeLayout>
     </LinearLayout>
 
 </ScrollView>

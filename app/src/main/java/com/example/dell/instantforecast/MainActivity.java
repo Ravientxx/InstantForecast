@@ -2,8 +2,10 @@ package com.example.dell.instantforecast;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.location.Location;
 import android.media.MediaScannerConnection;
@@ -121,8 +123,10 @@ public class MainActivity extends AppCompatActivity {
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         mainActivity = this;
         gpsTracker = new GPSTracker(this);
+
         //Set layout for activity
         setContentView(R.layout.activity_main);
+
 
         Intent intent = getIntent();
         selectFromWelcome = intent.getBooleanExtra("selectFromWelcome", false);
@@ -198,7 +202,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected(MenuItem item){
         //user clicked a menu-item from ActionBar
         int id = item.getItemId();
         switch (id) {
@@ -206,7 +210,15 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(new Intent(MainActivity.this, AppSettingActivity.class));
                 return true;
             case R.id.action_abouts:
-                shareImage();
+
+                saveBitmap(takeScreenshot());
+                shareIt();
+               /* try {
+                    shareImage();
+                }
+                catch (IOException e){
+                    e.printStackTrace();
+                }*/
                 return true;
         }
         return false;
@@ -255,13 +267,20 @@ public class MainActivity extends AppCompatActivity {
             navigationMenuList.setAdapter(navigationMenuListAdapter);
         }
     }
-    
-    public void shareImage(){
-        String path=Environment.getExternalStorageDirectory()+File.separator+"Screenshot.jpeg";
-        File imageFile=new File(path);
-        // create bitmap screen capture
+
+    public void shareImage() throws IOException{
+        ContextWrapper cw = new ContextWrapper(getApplicationContext());
+        //String path=Environment.getExternalStorageDirectory()+File.separator+"Screenshot.jpeg";
+        File directory= cw.getDir("imagDir", Context.MODE_PRIVATE);
+        File myPath = new File(directory,"profile.jpg");
+        /*// create bitmap screen capture
+        View screenView = getWindow().getDecorView().findViewById(android.R.id.content);
+        screenView.setDrawingCacheEnabled(true);
+        Bitmap bitmap = Bitmap.createBitmap(screenView.getDrawingCache());
+        screenView.setDrawingCacheEnabled(false);*/
+
         DisplayMetrics dm = this.getResources().getDisplayMetrics();
-        View v = this.getWindow().getDecorView().findViewById(R.id.capture).getRootView();
+        View v = this.getWindow().getDecorView().findViewById(android.R.id.content).getRootView();
         v.measure(View.MeasureSpec.makeMeasureSpec(dm.widthPixels, View.MeasureSpec.EXACTLY),
                 View.MeasureSpec.makeMeasureSpec(dm.heightPixels, View.MeasureSpec.EXACTLY));
         v.layout(0, 0, v.getMeasuredWidth(), v.getMeasuredHeight());
@@ -269,11 +288,11 @@ public class MainActivity extends AppCompatActivity {
                 v.getMeasuredHeight(), Bitmap.Config.ARGB_8888);
         Canvas c = new Canvas(returnedBitmap);
         v.draw(c);
-        // v1.setDrawingCacheEnabled( false);
-        OutputStream fout = null ;
+        v.setDrawingCacheEnabled( false);
+        FileOutputStream fout = null ;
         try {
-            fout = new FileOutputStream(imageFile);
-            returnedBitmap.compress(Bitmap.CompressFormat.JPEG, 90 , fout);
+            fout = new FileOutputStream(myPath);
+            returnedBitmap.compress(Bitmap.CompressFormat.JPEG, 100 , fout);
             fout.flush();
             fout.close();
             Toast.makeText(this, "Image saved!", Toast.LENGTH_SHORT).show();
@@ -287,12 +306,51 @@ public class MainActivity extends AppCompatActivity {
             // e.printStackTrace();
         }
 
+
+        //FileInputStream inputStream = new FileInputStream(myPath);
+        //BitmapFactory.decodeStream(inputStream);
+
+        Uri uri = Uri.fromFile(myPath);
         Intent i = new Intent();
         i.setAction(Intent.ACTION_SEND);
         i.setType("image/*");
-        i.putExtra(Intent.EXTRA_STREAM, Uri.fromFile( new File (path)));
-
-        this.startActivity(i);
+        i.putExtra(Intent.EXTRA_STREAM, uri);
+        startActivity(Intent.createChooser(i, "Share Screenshot"));
     }
 
+
+    File imagePath;
+
+    public Bitmap takeScreenshot() {
+        View rootView = findViewById(android.R.id.content).getRootView();
+        rootView.setDrawingCacheEnabled(true);
+        return rootView.getDrawingCache();
+    }
+
+    public void saveBitmap(Bitmap bitmap) {
+        imagePath = new File(Environment.getExternalStorageDirectory() + "/screenshot.png");
+        FileOutputStream fos;
+        try {
+            fos = new FileOutputStream(imagePath);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos);
+            fos.flush();
+            fos.close();
+        } catch (FileNotFoundException e) {
+            Log.e("GREC", e.getMessage(), e);
+        } catch (IOException e) {
+            Log.e("GREC", e.getMessage(), e);
+        }
+    }
+
+    private void shareIt() {
+        Uri uri = Uri.fromFile(imagePath);
+        Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
+        sharingIntent.setType("image/*");
+        String shareBody = "In Tweecher, My highest score with screen shot";
+        sharingIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, "My Tweecher score");
+        sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, shareBody);
+        sharingIntent.putExtra(Intent.EXTRA_STREAM, uri);
+
+        startActivity(Intent.createChooser(sharingIntent, "Share via"));
+    }
 }
