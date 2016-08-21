@@ -1,18 +1,12 @@
 package com.example.dell.instantforecast;
 
-import android.content.ContentValues;
 import android.content.Context;
-import android.content.ContextWrapper;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
 import android.location.Location;
-import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
-import android.provider.MediaStore;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -20,19 +14,19 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.maps.GoogleMap;
 import com.google.gson.Gson;
 
 import net.danlew.android.joda.JodaTimeAndroid;
@@ -43,11 +37,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -56,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
     static NavigationMenuListAdapter navigationMenuListAdapter;
     boolean firstStart = true;
     static MainActivity mainActivity;
-    GPSTracker gpsTracker;
+    static GPSTracker gpsTracker;
     static Toolbar toolbar;
     ActionBar actionBar;
     static DrawerLayout drawer;
@@ -64,8 +55,11 @@ public class MainActivity extends AppCompatActivity {
     static ListView navigationMenuList;
     static ImageView background_image_view;
     static TextView city_name_textview, city_time_textview;
-    boolean selectFromWelcome;
-    GoogleMap map;
+    static boolean loadFromWelcome;
+    static boolean loadFromNotification;
+    static double locationLatFromNotification, locationLonFromNotification;
+    static String locationIdFromNotification;
+    static ViewTreeObserver.OnScrollChangedListener offlineScroll;
 
     private void initNavigationMenu() {
         drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -102,12 +96,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Location myLocation = gpsTracker.getLocation();
-                WeatherInfoFragment.loadWeatherInfo(
-                        "get_current_location",
-                        myLocation.getLatitude(),
-                        myLocation.getLongitude(),
-                        true
-                );
+                WeatherInfoFragment.loadWeather(
+                        new LocationWeatherInfo("get_current_location", 0, myLocation.getLatitude(), myLocation.getLongitude()),
+                        true);
                 drawer.closeDrawer(GravityCompat.START);
             }
 
@@ -123,14 +114,17 @@ public class MainActivity extends AppCompatActivity {
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         mainActivity = this;
         gpsTracker = new GPSTracker(this);
-
         //Set layout for activity
         setContentView(R.layout.activity_main);
 
-
         Intent intent = getIntent();
-        selectFromWelcome = intent.getBooleanExtra("selectFromWelcome", false);
-        System.out.println(selectFromWelcome);
+        loadFromWelcome = intent.getBooleanExtra("loadFromWelcome", false);
+        loadFromNotification = intent.getBooleanExtra("loadFromNotification", false);
+        if (loadFromNotification) {
+            locationLatFromNotification = intent.getDoubleExtra("locationLatFromNotification", 0);
+            locationLonFromNotification = intent.getDoubleExtra("locationLonFromNotification", 0);
+            locationIdFromNotification = intent.getStringExtra("locationIdFromNotification");
+        }
         city_time_textview = (TextView) findViewById(R.id.city_time_textview);
         city_name_textview = (TextView) findViewById(R.id.city_name_textview);
 
@@ -152,6 +146,18 @@ public class MainActivity extends AppCompatActivity {
         initNavigationMenu();
 
         background_image_view = (ImageView) findViewById(R.id.background_image_view);
+
+        offlineScroll = new ViewTreeObserver.OnScrollChangedListener() {
+            @Override
+            public void onScrollChanged() {
+                WeatherInfoFragment.mainScrollView.fullScroll(ScrollView.FOCUS_UP);
+            }
+        };
+        if(!GeneralUtils.isOnline(mainActivity)){
+            Toast networkError = Toast.makeText(MainActivity.mainActivity, "Can't connect to internet!!", Toast.LENGTH_LONG);
+            networkError.show();
+            WeatherInfoFragment.mainScrollView.getViewTreeObserver().addOnScrollChangedListener(offlineScroll);
+        }
     }
 
     @Override
@@ -163,34 +169,40 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        loadAppData();
         if (firstStart == true) {
-            Location location = gpsTracker.getLocation();
-            WeatherInfoFragment.loadWeatherInfo(
-                    "get_current_location",
-                    location.getLatitude(),
-                    location.getLongitude(),
-                    true
-            );
-            firstStart = false;
-            if (selectFromWelcome) {
-                appDataModel.city_list = new ArrayList<LocationWeatherInfo>();
-                for (int i = 0; i < WelcomeActivity.selectedLocation.size(); i++) {
-                    for (int j = 0; j < WelcomeActivity.popularLocation.size(); j++) {
-                        if (WelcomeActivity.selectedLocation.get(i).equals(WelcomeActivity.popularLocation.get(j).name)) {
-                            LocationWeatherInfo locationInfo = WelcomeActivity.popularLocation.get(j);
-                            WeatherInfoFragment.loadWeatherInfo(
-                                    locationInfo.id,
-                                    locationInfo.lat,
-                                    locationInfo.lon,
-                                    false
-                            );
-                            break;
+            loadAppData();
+            if (loadFromNotification) {
+                WeatherInfoFragment.loadWeather(
+                        new LocationWeatherInfo("get_current_location", 0, locationLatFromNotification, locationLonFromNotification),
+                        true);
+
+                loadFromNotification = false;
+            } else {
+                Location location = gpsTracker.getLocation();
+                WeatherInfoFragment.loadWeather(
+                        new LocationWeatherInfo("get_current_location", 0, location.getLatitude(), location.getLongitude()),
+                        true);
+                firstStart = false;
+                if (loadFromWelcome) {
+                    for (int i = 0; i < WelcomeActivity.selectedLocation.size(); i++) {
+                        for (int j = 0; j < WelcomeActivity.popularLocation.size(); j++) {
+                            if (WelcomeActivity.selectedLocation.get(i).equals(WelcomeActivity.popularLocation.get(j).name)) {
+                                LocationWeatherInfo locationInfo = WelcomeActivity.popularLocation.get(j);
+                                WeatherInfoFragment.loadWeather( new LocationWeatherInfo(
+                                        locationInfo.id,
+                                        0,
+                                        locationInfo.lat,
+                                        locationInfo.lon),
+                                        false
+                                );
+                                break;
+                            }
                         }
                     }
+                    WelcomeActivity.selectedLocation.clear();
+                    WelcomeActivity.popularLocation.clear();
+                    loadFromWelcome = false;
                 }
-                WelcomeActivity.selectedLocation.clear();
-                WelcomeActivity.popularLocation.clear();
             }
         }
     }
@@ -202,7 +214,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item){
+    public boolean onOptionsItemSelected(MenuItem item) {
         //user clicked a menu-item from ActionBar
         int id = item.getItemId();
         switch (id) {
@@ -210,15 +222,8 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(new Intent(MainActivity.this, AppSettingActivity.class));
                 return true;
             case R.id.action_abouts:
-
                 saveBitmap(takeScreenshot());
                 shareIt();
-               /* try {
-                    shareImage();
-                }
-                catch (IOException e){
-                    e.printStackTrace();
-                }*/
                 return true;
         }
         return false;
@@ -268,63 +273,15 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void shareImage() throws IOException{
-        ContextWrapper cw = new ContextWrapper(getApplicationContext());
-        //String path=Environment.getExternalStorageDirectory()+File.separator+"Screenshot.jpeg";
-        File directory= cw.getDir("imagDir", Context.MODE_PRIVATE);
-        File myPath = new File(directory,"profile.jpg");
-        /*// create bitmap screen capture
-        View screenView = getWindow().getDecorView().findViewById(android.R.id.content);
-        screenView.setDrawingCacheEnabled(true);
-        Bitmap bitmap = Bitmap.createBitmap(screenView.getDrawingCache());
-        screenView.setDrawingCacheEnabled(false);*/
-
-        DisplayMetrics dm = this.getResources().getDisplayMetrics();
-        View v = this.getWindow().getDecorView().findViewById(android.R.id.content).getRootView();
-        v.measure(View.MeasureSpec.makeMeasureSpec(dm.widthPixels, View.MeasureSpec.EXACTLY),
-                View.MeasureSpec.makeMeasureSpec(dm.heightPixels, View.MeasureSpec.EXACTLY));
-        v.layout(0, 0, v.getMeasuredWidth(), v.getMeasuredHeight());
-        Bitmap returnedBitmap = Bitmap.createBitmap(v.getMeasuredWidth(),
-                v.getMeasuredHeight(), Bitmap.Config.ARGB_8888);
-        Canvas c = new Canvas(returnedBitmap);
-        v.draw(c);
-        v.setDrawingCacheEnabled( false);
-        FileOutputStream fout = null ;
-        try {
-            fout = new FileOutputStream(myPath);
-            returnedBitmap.compress(Bitmap.CompressFormat.JPEG, 100 , fout);
-            fout.flush();
-            fout.close();
-            Toast.makeText(this, "Image saved!", Toast.LENGTH_SHORT).show();
-        } catch ( FileNotFoundException e) {
-            // TODO Auto-generated catch block
-            Toast.makeText(this,"File not found!", Toast.LENGTH_SHORT).show();
-            // e.printStackTrace();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            Toast.makeText(this, "IO Exception!", Toast.LENGTH_SHORT).show();
-            // e.printStackTrace();
-        }
-
-
-        //FileInputStream inputStream = new FileInputStream(myPath);
-        //BitmapFactory.decodeStream(inputStream);
-
-        Uri uri = Uri.fromFile(myPath);
-        Intent i = new Intent();
-        i.setAction(Intent.ACTION_SEND);
-        i.setType("image/*");
-        i.putExtra(Intent.EXTRA_STREAM, uri);
-        startActivity(Intent.createChooser(i, "Share Screenshot"));
-    }
-
-
     File imagePath;
 
     public Bitmap takeScreenshot() {
         View rootView = findViewById(android.R.id.content).getRootView();
         rootView.setDrawingCacheEnabled(true);
-        return rootView.getDrawingCache();
+        rootView.buildDrawingCache();
+        Bitmap bitmap = Bitmap.createBitmap(rootView.getDrawingCache());
+        rootView.destroyDrawingCache();
+        return bitmap;
     }
 
     public void saveBitmap(Bitmap bitmap) {

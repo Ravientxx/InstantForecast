@@ -49,7 +49,7 @@ public class AddLocationMapActivity extends AppCompatActivity{
             @Override
             public void onMapClick(LatLng latLng) {
                 moveToNewPlace(latLng);
-                WeatherInfoFragment.loadWeatherInfo("add_location_map", latLng.latitude, latLng.longitude,true);
+                WeatherInfoFragment.loadWeather(new LocationWeatherInfo("add_location_map",0, latLng.latitude, latLng.longitude),true);
                 finish();
             }
         });

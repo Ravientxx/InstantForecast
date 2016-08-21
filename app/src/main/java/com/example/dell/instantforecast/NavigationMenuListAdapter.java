@@ -39,7 +39,7 @@ public class NavigationMenuListAdapter extends BaseAdapter {
     }
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
+    public View getView(final int position, View convertView, ViewGroup parent) {
         final LocationWeatherInfo current_city = listModels.get(position);
 
         if (convertView == null) {
@@ -60,7 +60,11 @@ public class NavigationMenuListAdapter extends BaseAdapter {
             @Override
             public void onClick(View v) {
                 MainActivity.drawer.closeDrawer(GravityCompat.START);
-                WeatherInfoFragment.loadWeatherInfo(current_city.id,current_city.lat,current_city.lon,true);
+                MainActivity.appDataModel.selected_location_index = position;
+                WeatherInfoFragment.loadWeather(
+                        MainActivity.appDataModel.city_list.get(position)
+                        ,true
+                );
             }
         });
         return convertView;

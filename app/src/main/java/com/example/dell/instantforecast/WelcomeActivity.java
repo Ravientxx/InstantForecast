@@ -8,7 +8,6 @@ import android.os.Bundle;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
-import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,7 +31,7 @@ public class WelcomeActivity extends AppCompatActivity {
     private LinearLayout scrollView;
     static ArrayList<LocationWeatherInfo> popularLocation;
     static ArrayList<String> selectedLocation;
-
+    static boolean clicked[] = {false,false,false,false,false,false,false};
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -73,9 +72,9 @@ public class WelcomeActivity extends AppCompatActivity {
                     } else {
                         Intent intent = new Intent(WelcomeActivity.this, MainActivity.class);
                         if (selectedLocation.size() == 0) {
-                            intent.putExtra("selectFromWelcome", false);
+                            intent.putExtra("loadFromWelcome", false);
                         } else {
-                            intent.putExtra("selectFromWelcome", true);
+                            intent.putExtra("loadFromWelcome", true);
                         }
                         startActivity(intent);
                         finish();
@@ -87,35 +86,14 @@ public class WelcomeActivity extends AppCompatActivity {
         getSupportActionBar().hide();
     }
 
-    boolean isClicked = true;
-
     private synchronized void addCity() {
         selectedLocation = new ArrayList<>();
         LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
         scrollView = (LinearLayout) findViewById(R.id.liner);
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < 7; i++) {
             View view = inflater.inflate(R.layout.item_city, null, false);
             final ImageView imageView = (ImageView) view.findViewById(R.id.click);
             final TextView textView = (TextView) view.findViewById(R.id.txtCity);
-            LinearLayout linearLayout = (LinearLayout) view.findViewById(R.id.llCity);
-            linearLayout.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (isClicked) {
-                        isClicked = false;
-                        imageView.setVisibility(View.VISIBLE);
-                        TextView textView1 = (TextView) v.findViewById(R.id.txtCity);
-                        String str = textView1.getText().toString();
-                        selectedLocation.add(str);
-                    } else {
-                        imageView.setVisibility(View.GONE);
-                        isClicked = true;
-                        TextView textView1 = (TextView) v.findViewById(R.id.txtCity);
-                        String str = textView1.getText().toString();
-                        selectedLocation.remove(str);
-                    }
-                }
-            });
             textView.setText(popularLocation.get(i).name);
             ImageView imageCity = (ImageView) view.findViewById(R.id.imageCity);
             switch (popularLocation.get(i).name) {
@@ -131,30 +109,35 @@ public class WelcomeActivity extends AppCompatActivity {
                 case "Tokyo":
                     imageCity.setImageResource(R.drawable.tokyo);
                     break;
+                case "Paris":
+                    imageCity.setImageResource(R.drawable.paris);
+                    break;
+                case "Sydney":
+                    imageCity.setImageResource(R.drawable.sydney);
+                    break;
+                case "Singapore":
+                    imageCity.setImageResource(R.drawable.singapore);
+                    break;
             }
-
-
+            view.setTag(i);
+            view.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    int i = (int)v.getTag();
+                    clicked[i] = !clicked[i];
+                    if (clicked[i]) {
+                        imageView.setVisibility(View.VISIBLE);
+                        String str = textView.getText().toString();
+                        selectedLocation.add(str);
+                    } else {
+                        imageView.setVisibility(View.GONE);
+                        String str = textView.getText().toString();
+                        selectedLocation.remove(str);
+                    }
+                }
+            });
             scrollView.addView(view);
         }
-    }
-
-    private void addBottomDots(int currentPage) {
-        dots = new TextView[layouts.length];
-
-        int[] colorsActive = getResources().getIntArray(R.array.array_dot_active);
-        int[] colorsInactive = getResources().getIntArray(R.array.array_dot_inactive);
-
-        dotsLayout.removeAllViews();
-        for (int i = 0; i < dots.length; i++) {
-            dots[i] = new TextView(this);
-            dots[i].setText(Html.fromHtml("&#8226;"));
-            dots[i].setTextSize(35);
-            dots[i].setTextColor(colorsInactive[currentPage]);
-            dotsLayout.addView(dots[i]);
-        }
-
-        if (dots.length > 0)
-            dots[currentPage].setTextColor(colorsActive[currentPage]);
     }
 
     private int getItem(int i) {
@@ -164,7 +147,7 @@ public class WelcomeActivity extends AppCompatActivity {
     private void launchHomeScreen() {
         prefManager.setFirstTimeLaunch(false);
         Intent intent = new Intent(WelcomeActivity.this, SplashScreen.class);
-        intent.putExtra("selectFromWelcome", false);
+        intent.putExtra("loadFromWelcome", false);
         startActivity(intent);
         finish();
     }
@@ -239,5 +222,8 @@ public class WelcomeActivity extends AppCompatActivity {
         popularLocation.add(new LocationWeatherInfo("2643743", "London", 51.50853, -0.12574));
         popularLocation.add(new LocationWeatherInfo("1566083", "Hồ Chí Minh", 10.75, 106.666672));
         popularLocation.add(new LocationWeatherInfo("1850147", "Tokyo", 35.689499, 139.691711));
+        popularLocation.add(new LocationWeatherInfo("6618607", "Paris", 48.8592, 2.3417));
+        popularLocation.add(new LocationWeatherInfo("2147714", "Sydney", -33.867851, 151.207321));
+        popularLocation.add(new LocationWeatherInfo("1880252", "Singapore", 1.28967, 103.850067));
     }
 }

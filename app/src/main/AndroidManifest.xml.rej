@@ -1,0 +1,10 @@
+diff a/app/src/main/AndroidManifest.xml b/app/src/main/AndroidManifest.xml	(rejected hunks)
+@@ -56,8 +56,6 @@
+         </activity>
+         <activity android:name=".AddLocationActivity"></activity>
+         <activity android:name="com.example.dell.instantforecast.AppSettingActivity"></activity>
+-        <activity android:name="com.example.dell.instantforecast.ChartActivity"></activity>
+-        <activity android:name="com.example.dell.instantforecast.MapActivity"></activity>
+         <activity android:name=".MapLayerActivity"></activity>
+         <activity android:name=".AddLocationMapActivity"></activity>
+         <activity android:name=".EditLocationActivity"></activity>

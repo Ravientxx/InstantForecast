@@ -92,7 +92,8 @@ public class AddLocationActivity extends AppCompatActivity implements AdapterVie
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         LocationInfo locationInfo = locationInfos.get(position);
-        WeatherInfoFragment.loadWeatherInfo(locationInfo.id, locationInfo.lat, locationInfo.lon,true);
+
+        WeatherInfoFragment.loadWeather(new LocationWeatherInfo(locationInfo.id,0,locationInfo.lat,locationInfo.lon),true);
         finish();
     }
 

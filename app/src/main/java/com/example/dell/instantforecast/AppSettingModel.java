@@ -1,9 +1,9 @@
 package com.example.dell.instantforecast;
 
 /**
- * Created by Dell on 8/18/2016.
+ * Created by Dell on 8/19/2016.
  */
-public class AppSetting {
+public class AppSettingModel {
     String Unit;
     boolean isDailyNotificationActivated;
     String dailyMorningTime;

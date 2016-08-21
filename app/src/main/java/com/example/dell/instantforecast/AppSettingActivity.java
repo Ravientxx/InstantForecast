@@ -3,10 +3,10 @@ package com.example.dell.instantforecast;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.location.Location;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.NotificationCompat;
@@ -18,29 +18,21 @@ import android.widget.Button;
 import android.widget.RemoteViews;
 import android.widget.TextView;
 
-import com.google.gson.Gson;
 import com.mikepenz.iconics.IconicsDrawable;
 import com.mikepenz.weather_icons_typeface_library.WeatherIcons;
-
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 
 /**
  * Created by Dell on 7/23/2016.
  */
 public class AppSettingActivity extends AppCompatActivity {
-
-    final String FILENAME = "AppSettingData";
     static AppSettingActivity currentSetting;
-    static boolean usingCelcius;
-    final int DAILY_NOTIFICATION_ID = 1507;
+    static public int MORNING_NOTIFICATION_ID = 1570;
+    static public int AFTERNOON_NOTIFICATION_ID = 1571;
     final int ONGOING_NOTIFICATION_ID = 2205;
 
     Button C_Button,F_Button;
-    static AppSetting appSetting;
+    static public AppSettingModel appSettingModel;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -64,8 +56,9 @@ public class AppSettingActivity extends AppCompatActivity {
                 public void onClick(View v) {
                     C_Button.setBackgroundColor(getResources().getColor(R.color.switch_button_on));
                     F_Button.setBackgroundColor(getResources().getColor(R.color.switch_button_off));
-                    usingCelcius = true;
-                    appSetting.Unit = "C";
+                    appSettingModel.Unit = "C";
+                    GeneralUtils.saveAppSetting(currentSetting,appSettingModel);
+                    updateDataWithUnit("C");
                 }
             });
             F_Button.setOnClickListener(new View.OnClickListener() {
@@ -73,8 +66,9 @@ public class AppSettingActivity extends AppCompatActivity {
                 public void onClick(View v) {
                     C_Button.setBackgroundColor(getResources().getColor(R.color.switch_button_off));
                     F_Button.setBackgroundColor(getResources().getColor(R.color.switch_button_on));
-                    usingCelcius = false;
-                    appSetting.Unit = "F";
+                    appSettingModel.Unit = "F";
+                    GeneralUtils.saveAppSetting(currentSetting,appSettingModel);
+                    updateDataWithUnit("F");
                 }
             });
         }
@@ -83,42 +77,35 @@ public class AppSettingActivity extends AppCompatActivity {
             dailyNotification.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-//                    NotificationManager notificationManager =
-//                            (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-//                    notificationManager.cancel(DAILY_NOTIFICATION_ID);
-                    startActivity(new Intent(AppSettingActivity.this,DailyNotificationActivity.class));
+                    startActivity(new Intent(AppSettingActivity.this,DailyNotificationSettingActivity.class));
                 }
             });
         }
 
-        TextView ongoingNotification = (TextView) findViewById(R.id.ongoing_notification);
-        if (ongoingNotification != null) {
-            ongoingNotification.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    activateOngoingNotification();
-                }
-            });
-        }
+//        TextView ongoingNotification = (TextView) findViewById(R.id.ongoing_notification);
+//        if (ongoingNotification != null) {
+//            ongoingNotification.setOnClickListener(new View.OnClickListener() {
+//                @Override
+//                public void onClick(View v) {
+//                    activateOngoingNotification();
+//                }
+//            });
+//        }
 
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        loadSetting();
-        if(appSetting.Unit.equals("C")){
-            C_Button.callOnClick();
+        appSettingModel = GeneralUtils.loadAppSetting(this);
+        if(appSettingModel.Unit.equals("C")){
+            C_Button.setBackgroundColor(getResources().getColor(R.color.switch_button_on));
+            F_Button.setBackgroundColor(getResources().getColor(R.color.switch_button_off));
         }
         else{
-            F_Button.callOnClick();
+            C_Button.setBackgroundColor(getResources().getColor(R.color.switch_button_off));
+            F_Button.setBackgroundColor(getResources().getColor(R.color.switch_button_on));
         }
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        saveSetting();
     }
 
     @Override
@@ -154,39 +141,32 @@ public class AppSettingActivity extends AppCompatActivity {
         NotificationManager notificationManager =
                 (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 
-        notificationManager.notify(DAILY_NOTIFICATION_ID, n);
+        notificationManager.notify(ONGOING_NOTIFICATION_ID, n);
     }
 
-    public void saveSetting(){
-        String string = new Gson().toJson(appSetting, AppSetting.class);
-        try {
-            FileOutputStream out = openFileOutput(FILENAME, Context.MODE_PRIVATE);
-            OutputStreamWriter fos = new OutputStreamWriter(out, "UTF-8");
-            fos.write(string);
-            fos.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-    public void loadSetting(){
-        String string1 = "";
-        try {
-            FileInputStream inputStream = openFileInput(FILENAME);
-            InputStreamReader fin = new InputStreamReader(inputStream, "UTF-8");
-            int i = 0;
-            while ((i = fin.read()) != -1) {
-                string1 += (char) i;
+    public static void updateDataWithUnit(String Unit){
+        if(Unit.equals("C")){
+            for(int i = 0 ; i < MainActivity.appDataModel.city_list.size(); i++){
+                LocationWeatherInfo location = GeneralUtils.locationWithCelsius(MainActivity.appDataModel.city_list.get(i));
+                MainActivity.appDataModel.city_list.remove(i);
+                MainActivity.appDataModel.city_list.add(i,location);
             }
-            fin.close();
-            appSetting = new Gson().fromJson(string1, AppSetting.class);
-            System.out.println(string1);
-        } catch (FileNotFoundException e) {
-            appSetting = new AppSetting();
-            appSetting.isDailyNotificationActivated = false;
-            appSetting.isOngoingNotificationActivated = false;
-            appSetting.Unit = "C";
-        } catch (Exception e) {
-            e.printStackTrace();
+        }else{
+            for(int i = 0 ; i < MainActivity.appDataModel.city_list.size(); i++){
+                LocationWeatherInfo location = GeneralUtils.locationWithFahrenheit(MainActivity.appDataModel.city_list.get(i));
+                MainActivity.appDataModel.city_list.remove(i);
+                MainActivity.appDataModel.city_list.add(i,location);
+            }
+        }
+        MainActivity.navigationMenuListAdapter.notifyDataSetChanged();
+        if(MainActivity.appDataModel.selected_location_index == -1){
+            Location location = MainActivity.gpsTracker.getLocation();
+            WeatherInfoFragment.loadWeather(
+                    new LocationWeatherInfo("get_current_location", 0, location.getLatitude(), location.getLongitude()),
+                    true);
+        }
+        else{
+            WeatherInfoFragment.loadWeather(MainActivity.appDataModel.city_list.get(MainActivity.appDataModel.selected_location_index),true);
         }
     }
 }
