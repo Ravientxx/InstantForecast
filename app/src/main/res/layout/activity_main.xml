@@ -6,6 +6,7 @@
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
     android:orientation="vertical"
+    android:id="@+id/capture"
     tools:context=".MainActivity"
     android:background="@drawable/clear_sky_day">
 

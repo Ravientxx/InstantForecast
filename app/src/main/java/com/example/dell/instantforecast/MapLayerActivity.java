@@ -2,6 +2,8 @@ package com.example.dell.instantforecast;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 import android.view.View;
@@ -9,9 +11,12 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.CameraPosition;
+import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.TileOverlay;
 import com.google.android.gms.maps.model.TileOverlayOptions;
 import com.google.android.gms.maps.model.TileProvider;
@@ -23,13 +28,13 @@ import java.net.URL;
 /**
  * Created by TONITUAN on 8/16/2016.
  */
-public class MapLayerActivity extends AppCompatActivity{
+public class MapLayerActivity extends AppCompatActivity {
 
     private GoogleMap map;
     String tileType = "clouds";
     TileOverlay tileOverlay;
     Spinner spinner;
-
+    SupportMapFragment fragment;
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -40,7 +45,7 @@ public class MapLayerActivity extends AppCompatActivity{
 
         String[] tileName = new String[]{"Clouds", "Temperature", "Precipitations", "Snow", "Rain", "Wind", "Sea level press."};
         ArrayAdapter<String> adpt = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, tileName);
-        spinner = (Spinner)findViewById(R.id.spinner);
+        spinner = (Spinner) findViewById(R.id.spinner);
         spinner.setAdapter(adpt);
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -90,15 +95,28 @@ public class MapLayerActivity extends AppCompatActivity{
         setUpMapIfNeeded();
     }
 
-    public void setUpMapIfNeeded(){
-        if(map == null){
-            SupportMapFragment fragment = (SupportMapFragment)getSupportFragmentManager().findFragmentById(R.id.map);
+    public void setUpMapIfNeeded() {
+        fragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
+        if (fragment == null) {
+            FragmentManager fragmentManager = getSupportFragmentManager();
+            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+            fragment = SupportMapFragment.newInstance();
+            fragmentTransaction.replace(R.id.map_view, fragment).commit();
+        }
+        if(fragment!= null) {
             fragment.getMapAsync(new OnMapReadyCallback() {
                 @Override
                 public void onMapReady(GoogleMap googleMap) {
                     map = googleMap;
-                    //googleMap.setMapType(GoogleMap.MAP_TYPE_NONE);
-                    if(map != null){
+                    CameraPosition cameraPosition = new CameraPosition.Builder().target(
+                            new LatLng(MainActivity.appDataModel.current_city.lat, MainActivity.appDataModel.current_city.lon))
+                            .zoom(8)
+                            .build();
+
+                    map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+                    map.getUiSettings().setZoomControlsEnabled(true);
+                    googleMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
+                    if (map != null) {
                         setUpMap();
                     }
                 }
@@ -106,7 +124,7 @@ public class MapLayerActivity extends AppCompatActivity{
         }
     }
 
-    private void setUpMap(){
+    private void setUpMap() {
         tileOverlay = map.addTileOverlay(new TileOverlayOptions().tileProvider(createTileProvider()).transparency(0.5f));
         updateTileOverlayTransparency();
     }
@@ -118,22 +136,21 @@ public class MapLayerActivity extends AppCompatActivity{
         }
     }
 
-    private TileProvider createTransparentTileProvider(){
+    private TileProvider createTransparentTileProvider() {
         return new TransparentTileOWM(tileType);
     }
 
-    public TileProvider createTileProvider(){
+    public TileProvider createTileProvider() {
         TileProvider tileProvider = new UrlTileProvider(512, 512) {
 
             @Override
-            public synchronized  URL getTileUrl(int i, int i1, int i2) {
+            public synchronized URL getTileUrl(int i, int i1, int i2) {
                 int reversedY = (1 << i2) - i1 - 1;
                 String fUrl = String.format(TransparentTileOWM.OWM_TILE_URL, tileType == null ? "clouds" : tileType, i2, i, reversedY);
                 URL url = null;
-                try{
+                try {
                     url = new URL(fUrl);
-                }
-                catch (MalformedURLException e){
+                } catch (MalformedURLException e) {
                     e.printStackTrace();
                 }
                 return url;
@@ -148,4 +165,5 @@ public class MapLayerActivity extends AppCompatActivity{
         finish();
         return false;
     }
+
 }

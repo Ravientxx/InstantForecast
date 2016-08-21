@@ -133,26 +133,27 @@
     </RelativeLayout>
         <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="100dp"
+            android:layout_height="300dp"
             android:background="#59000000"
+            android:id="@+id/chart"
+            android:padding="10dp"
             android:layout_margin="10dp">
-            <TextView
-                android:text="ABC"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textColor="#FFFFFF"
-                android:textSize="45dp"
-                android:layout_alignParentTop="true"
-                android:layout_marginBottom="10dp"/>
 
             <TextView
-                android:text="def"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="10dp"
-                android:textAppearance="?android:attr/textAppearanceMedium"
-                android:textColor="#FFFFFF"
-                android:layout_alignParentBottom="true"/>
+                android:text="Chart"
+                android:textSize="@dimen/main_text_size"
+                android:textColor="#FFFFFF"/>
+
+            <com.github.mikephil.charting.charts.CombinedChart
+                android:id="@+id/chart1"
+                android:layout_width="match_parent"
+                android:layout_alignParentBottom="true"
+                android:layout_height="255dp">
+
+            </com.github.mikephil.charting.charts.CombinedChart>
+
         </RelativeLayout>
         <LinearLayout
             android:orientation="vertical"
@@ -179,6 +180,5 @@
 
         </LinearLayout>
     </LinearLayout>
-
 
 </ScrollView>

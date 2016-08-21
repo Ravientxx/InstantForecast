@@ -75,7 +75,7 @@ public class TransparentTileOWM implements TileProvider {
     }
 
     private Bitmap adjustOpacity(Bitmap bitmap){
-        Bitmap bitmap1 = Bitmap.createBitmap(256, 256, Bitmap.Config.ARGB_8888);
+        Bitmap bitmap1 = Bitmap.createBitmap(512, 512, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap1);
         canvas.drawBitmap(bitmap, 0, 0, opacityPaint);
         return bitmap1;

@@ -1,9 +1,16 @@
 package com.example.dell.instantforecast;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.location.Location;
+import android.media.MediaScannerConnection;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -11,6 +18,8 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -19,18 +28,24 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.GoogleMap;
 import com.google.gson.Gson;
 
 import net.danlew.android.joda.JodaTimeAndroid;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -96,6 +111,7 @@ public class MainActivity extends AppCompatActivity {
 
         });
     }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -157,7 +173,7 @@ public class MainActivity extends AppCompatActivity {
                 appDataModel.city_list = new ArrayList<LocationWeatherInfo>();
                 for (int i = 0; i < WelcomeActivity.selectedLocation.size(); i++) {
                     for (int j = 0; j < WelcomeActivity.popularLocation.size(); j++) {
-                        if(WelcomeActivity.selectedLocation.get(i).equals(WelcomeActivity.popularLocation.get(j).name)){
+                        if (WelcomeActivity.selectedLocation.get(i).equals(WelcomeActivity.popularLocation.get(j).name)) {
                             LocationWeatherInfo locationInfo = WelcomeActivity.popularLocation.get(j);
                             WeatherInfoFragment.loadWeatherInfo(
                                     locationInfo.id,
@@ -190,6 +206,7 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(new Intent(MainActivity.this, AppSettingActivity.class));
                 return true;
             case R.id.action_abouts:
+                shareImage();
                 return true;
         }
         return false;
@@ -238,4 +255,44 @@ public class MainActivity extends AppCompatActivity {
             navigationMenuList.setAdapter(navigationMenuListAdapter);
         }
     }
+    
+    public void shareImage(){
+        String path=Environment.getExternalStorageDirectory()+File.separator+"Screenshot.jpeg";
+        File imageFile=new File(path);
+        // create bitmap screen capture
+        DisplayMetrics dm = this.getResources().getDisplayMetrics();
+        View v = this.getWindow().getDecorView().findViewById(R.id.capture).getRootView();
+        v.measure(View.MeasureSpec.makeMeasureSpec(dm.widthPixels, View.MeasureSpec.EXACTLY),
+                View.MeasureSpec.makeMeasureSpec(dm.heightPixels, View.MeasureSpec.EXACTLY));
+        v.layout(0, 0, v.getMeasuredWidth(), v.getMeasuredHeight());
+        Bitmap returnedBitmap = Bitmap.createBitmap(v.getMeasuredWidth(),
+                v.getMeasuredHeight(), Bitmap.Config.ARGB_8888);
+        Canvas c = new Canvas(returnedBitmap);
+        v.draw(c);
+        // v1.setDrawingCacheEnabled( false);
+        OutputStream fout = null ;
+        try {
+            fout = new FileOutputStream(imageFile);
+            returnedBitmap.compress(Bitmap.CompressFormat.JPEG, 90 , fout);
+            fout.flush();
+            fout.close();
+            Toast.makeText(this, "Image saved!", Toast.LENGTH_SHORT).show();
+        } catch ( FileNotFoundException e) {
+            // TODO Auto-generated catch block
+            Toast.makeText(this,"File not found!", Toast.LENGTH_SHORT).show();
+            // e.printStackTrace();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            Toast.makeText(this, "IO Exception!", Toast.LENGTH_SHORT).show();
+            // e.printStackTrace();
+        }
+
+        Intent i = new Intent();
+        i.setAction(Intent.ACTION_SEND);
+        i.setType("image/*");
+        i.putExtra(Intent.EXTRA_STREAM, Uri.fromFile( new File (path)));
+
+        this.startActivity(i);
+    }
+
 }

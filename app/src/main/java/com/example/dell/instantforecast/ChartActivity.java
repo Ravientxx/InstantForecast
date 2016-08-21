@@ -32,6 +32,7 @@ import java.util.ArrayList;
 public class ChartActivity extends AppCompatActivity {
 
     private CombinedChart chart;
+    private CombinedData data;
     private final int itemCount = 12;
     private Typeface mTfLight;
     private String[] mMonths = new String[] {
@@ -95,6 +96,7 @@ public class ChartActivity extends AppCompatActivity {
         chart.invalidate();
     }
 
+
     private LineData generateLineData(){
         LineData data = new LineData();
         ArrayList<Entry> entries = new ArrayList<>();
@@ -127,15 +129,14 @@ public class ChartActivity extends AppCompatActivity {
         for (int index = 0; index < itemCount; index++) {
             entries1.add(new BarEntry(0, getRandom(25, 25)));
             // stacked
-            entries2.add(new BarEntry(0, new float[]{getRandom(13, 12), getRandom(13, 12)}));
+            entries2.add(new BarEntry(0, new float[]{getRandom(100, 12), getRandom(100, 12)}));
         }
 
-        BarDataSet set1 = new BarDataSet(entries1, "Bar 1");
-        //set1.setColor(Color.rgb(60, 220, 78));
-        set1.setColor(Color.rgb(255, 0, 0));
+        BarDataSet set1 = new BarDataSet(entries1, " 1");
+        set1.setColor(Color.rgb(60, 220, 78));
         set1.setValueTextColor(Color.rgb(255, 0, 0));
         set1.setValueTextSize(10f);
-        set1.setAxisDependency(YAxis.AxisDependency.RIGHT);
+        set1.setAxisDependency(YAxis.AxisDependency.LEFT);
 
         BarDataSet set2 = new BarDataSet(entries2, "");
         set2.setStackLabels(new String[]{"Stack 1", "Stack 2"});
