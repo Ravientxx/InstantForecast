@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -18,6 +19,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -39,6 +41,7 @@ import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -61,6 +64,9 @@ public class WeatherInfoFragment extends Fragment {
     static WeatherInfoFragment frag;
     SupportMapFragment mSupportMapFragment;
     static Timer myTimer;
+    static List<SingleItem> linkss;
+    static ListView listRss;
+    SingleItem selectedNewsItem;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -111,6 +117,21 @@ public class WeatherInfoFragment extends Fragment {
 
         current_condition_layout = (RelativeLayout) view.findViewById(R.id.current_condition_screen);
         blurred_background_image = new ArrayList<>();
+
+        listRss = (ListView)view.findViewById(R.id.myListView);
+        listRss.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                selectedNewsItem = linkss.get(position);
+                final Uri storyLink = Uri.parse(selectedNewsItem.getLink());
+                Intent intent = new Intent(Intent.ACTION_VIEW, storyLink);
+                startActivity(intent);
+            }
+        });
+
+//        DownloadRssFeed downloader = new DownloadRssFeed(MainActivity.mainActivity);
+  //      downloader.execute("http://tuoitre.vn/rss/tt-the-gioi.rss");
+
 
         current_condition_layout = (RelativeLayout) view.findViewById(R.id.current_condition_screen);
         mainScrollView = (ScrollView) view.findViewById(R.id.weather_info_scroll_view);
@@ -270,6 +291,12 @@ public class WeatherInfoFragment extends Fragment {
                 return false;
             }
         });
+
+        listRss.setFocusable(false);
+        DownloadRssFeed downloader = new DownloadRssFeed(MainActivity.mainActivity);
+        downloader.execute("https://news.google.com.vn/news?cf=all&pz=1&ned=uk&output=rss");
+
+
         mainScrollView.setEnabled(true);
 
 
